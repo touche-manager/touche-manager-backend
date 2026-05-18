@@ -2,7 +2,7 @@ spring:
   application:
     name: touche-manager
   datasource:
-    url: jdbc:postgresql://postgres:5432/${POSTGRES_DB:touche_manager}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:touche_manager}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver

@@ -1,1 +1,32 @@
+# Environment variables
 .env
+
+# Build output
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Maven wrapper logs
+.mvn/wrapper/maven-wrapper.jar
+
+# Jira credentials
+jira-credentials.json
+
+#Agent
+agent.md

@@ -29,11 +29,11 @@ Módulos:
 Estructura de paquetes base: `com.touchemanager`
 
 ## Convenciones de código
+- **TODO DEBE ESTAR EN INGLÉS**: nombres de clases, métodos, variables, mensajes de error, comentarios, exception messages, Swagger descriptions, validation messages, logging. Excepción: documentación en README.md puede estar en español.
 - Usar `@RequiredArgsConstructor` de Lombok para inyección por constructor (nunca @Autowired)
 - Servicios siempre con interfaz + implementación en `service/impl`
 - DTOs como Java Records cuando son solo de lectura; clases normales con Lombok si necesitan validaciones @Valid
 - Todas las respuestas de la API usar ApiResponse<T> del shared
-- Nombres en inglés para clases y métodos, español para comentarios si hace falta
 - Validaciones con Jakarta Validation (@NotBlank, @Email, @NotNull, etc.)
 - Excepciones de negocio: lanzar excepciones personalizadas que extienden RuntimeException, capturadas en GlobalExceptionHandler
 
