@@ -77,8 +77,9 @@ public class UsuarioServiceImpl implements UsuarioService {
             return new LoginResponseDTO(token, null);
         }
 
-        // Multiple roles → return role list, frontend must call /select-role
-        return new LoginResponseDTO(null, roles);
+        // Multiple roles → return temporary token and role list, frontend must call /select-role
+        String tempToken = jwtService.generateToken(usuario.getId(), usuario.getEmail(), null);
+        return new LoginResponseDTO(tempToken, roles);
     }
 
     @Override

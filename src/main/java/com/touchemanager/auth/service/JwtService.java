@@ -25,14 +25,18 @@ public class JwtService {
     }
 
     public String generateToken(Long userId, String email, NombreRol rol) {
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
-                .claim("rol", rol.name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(signingKey)
-                .compact();
+                .signWith(signingKey);
+
+        if (rol != null) {
+            builder.claim("rol", rol.name());
+        }
+
+        return builder.compact();
     }
 
     public Claims extractAllClaims(String token) {
