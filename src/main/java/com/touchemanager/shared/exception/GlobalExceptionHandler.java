@@ -19,9 +19,21 @@ public class GlobalExceptionHandler {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse<Void> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(RolNoEncontradoException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<Void> handleRolNoEncontrado(RolNoEncontradoException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(RolNoAsignadoException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponse<Void> handleRolNoAsignado(RolNoAsignadoException ex) {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
