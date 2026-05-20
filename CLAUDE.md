@@ -29,7 +29,7 @@ Módulos:
 Estructura de paquetes base: `com.touchemanager`
 
 ## Convenciones de código
-- **TODO DEBE ESTAR EN INGLÉS**: nombres de clases, métodos, variables, mensajes de error, comentarios, exception messages, Swagger descriptions, validation messages, logging. Excepción: documentación en README.md puede estar en español.
+- **TODO EL CÓDIGO Y ESTRUCTURA DEBE ESTAR EN INGLÉS**: nombres de clases, métodos, variables, comentarios en el código, mensajes de excepciones internas, descripciones de Swagger, mensajes de validación y registros de log. El usuario final no interactúa con esta capa. Excepción: documentación en README.md puede estar en español.
 - Usar `@RequiredArgsConstructor` de Lombok para inyección por constructor (nunca @Autowired)
 - Servicios siempre con interfaz + implementación en `service/impl`
 - DTOs como Java Records cuando son solo de lectura; clases normales con Lombok si necesitan validaciones @Valid

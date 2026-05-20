@@ -19,6 +19,24 @@ public class GlobalExceptionHandler {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(AthleteNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiResponse<Void> handleAthleteNotFound(AthleteNotFoundException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(DniYaExisteException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiResponse<Void> handleDniYaExiste(DniYaExisteException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(AthleteAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiResponse<Void> handleAthleteAlreadyExists(AthleteAlreadyExistsException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(InvalidCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ApiResponse<Void> handleInvalidCredentials(InvalidCredentialsException ex) {
