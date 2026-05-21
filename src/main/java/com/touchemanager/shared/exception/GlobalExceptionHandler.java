@@ -70,6 +70,12 @@ public class GlobalExceptionHandler {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(UsuarioNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiResponse<Void> handleUsuarioNoEncontrado(UsuarioNoEncontradoException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponse<Void> handleGenerico(Exception ex) {

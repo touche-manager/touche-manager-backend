@@ -12,11 +12,15 @@ import com.touchemanager.shared.exception.EmailYaExisteException;
 import com.touchemanager.shared.exception.InvalidCredentialsException;
 import com.touchemanager.shared.exception.RolNoAsignadoException;
 import com.touchemanager.shared.exception.RolNoEncontradoException;
+import com.touchemanager.shared.exception.UsuarioNoEncontradoException;
+import com.touchemanager.shared.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,6 +32,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -105,5 +110,94 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .map(nombre -> rolRepository.findByNombre(nombre)
                         .orElseThrow(() -> new RolNoEncontradoException(nombre.name())))
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileDTO getProfile(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(email));
+
+        Set<NombreRol> nombresRoles = usuario.getRoles().stream()
+                .map(Rol::getNombre)
+                .collect(Collectors.toSet());
+
+        String profilePictureUrl = usuario.getProfilePictureKey() != null
+                ? "/api/users/profile-picture/" + usuario.getId()
+                : null;
+
+        return new UserProfileDTO(usuario.getId(), usuario.getEmail(), nombresRoles, profilePictureUrl);
+    }
+
+    @Override
+    @Transactional
+    public UserProfileDTO uploadProfilePicture(String email, MultipartFile file) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(email));
+
+        // Delete old profile picture if exists
+        if (usuario.getProfilePictureKey() != null) {
+            try {
+                fileStorageService.deleteFile(usuario.getProfilePictureKey());
+            } catch (Exception e) {
+                // Log and ignore or handle. We'll proceed so database update is clean.
+            }
+        }
+
+        // Upload new picture
+        String fileKey = fileStorageService.uploadFile(file, "profile-pictures/" + usuario.getId());
+        usuario.setProfilePictureKey(fileKey);
+        usuarioRepository.save(usuario);
+
+        return getProfile(email);
+    }
+
+    @Override
+    @Transactional
+    public UserProfileDTO deleteProfilePicture(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(email));
+
+        if (usuario.getProfilePictureKey() != null) {
+            fileStorageService.deleteFile(usuario.getProfilePictureKey());
+            usuario.setProfilePictureKey(null);
+            usuarioRepository.save(usuario);
+        }
+
+        return getProfile(email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InputStream getProfilePicture(Long userId) {
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(String.valueOf(userId)));
+
+        if (usuario.getProfilePictureKey() == null) {
+            throw new UsuarioNoEncontradoException("No profile picture set for user " + userId);
+        }
+
+        return fileStorageService.downloadFile(usuario.getProfilePictureKey());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getProfilePictureContentType(Long userId) {
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(String.valueOf(userId)));
+
+        String key = usuario.getProfilePictureKey();
+        if (key == null) {
+            return "image/png"; // default fallback
+        }
+
+        if (key.toLowerCase().endsWith(".png")) {
+            return "image/png";
+        } else if (key.toLowerCase().endsWith(".gif")) {
+            return "image/gif";
+        } else if (key.toLowerCase().endsWith(".webp")) {
+            return "image/webp";
+        }
+        return "image/jpeg"; // default fallback for jpg/jpeg
     }
 }

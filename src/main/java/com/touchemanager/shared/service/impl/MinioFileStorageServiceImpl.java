@@ -1,6 +1,6 @@
-package com.touchemanager.athlete.service.impl;
+package com.touchemanager.shared.service.impl;
 
-import com.touchemanager.athlete.service.FileStorageService;
+import com.touchemanager.shared.service.FileStorageService;
 import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

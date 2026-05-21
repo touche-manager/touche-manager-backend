@@ -7,7 +7,7 @@ import com.touchemanager.athlete.entity.DocumentType;
 import com.touchemanager.athlete.repository.AthleteDocumentRepository;
 import com.touchemanager.athlete.repository.AthleteRepository;
 import com.touchemanager.athlete.service.AthleteDocumentService;
-import com.touchemanager.athlete.service.FileStorageService;
+import com.touchemanager.shared.service.FileStorageService;
 import com.touchemanager.auth.entity.Usuario;
 import com.touchemanager.auth.repository.UsuarioRepository;
 import com.touchemanager.shared.exception.AthleteNotFoundException;

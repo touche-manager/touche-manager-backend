@@ -11,6 +11,7 @@ import com.touchemanager.shared.exception.EmailYaExisteException;
 import com.touchemanager.shared.exception.InvalidCredentialsException;
 import com.touchemanager.shared.exception.RolNoAsignadoException;
 import com.touchemanager.shared.exception.RolNoEncontradoException;
+import com.touchemanager.shared.service.FileStorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +19,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.mock.web.MockMultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,6 +45,9 @@ class UsuarioServiceImplTest {
 
     @Mock
     private JwtService jwtService;
+
+    @Mock
+    private FileStorageService fileStorageService;
 
     @InjectMocks
     private UsuarioServiceImpl usuarioService;
@@ -191,5 +198,68 @@ class UsuarioServiceImplTest {
         when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
 
         assertThrows(RolNoAsignadoException.class, () -> usuarioService.selectRole("test@test.com", selectRoleRequest));
+    }
+
+    @Test
+    void getProfile_Exito() {
+        usuario.setProfilePictureKey("profile-pictures/1/pic.png");
+        when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
+
+        UserProfileDTO profile = usuarioService.getProfile("test@test.com");
+
+        assertNotNull(profile);
+        assertEquals(usuario.getId(), profile.id());
+        assertEquals(usuario.getEmail(), profile.email());
+        assertEquals("/api/users/profile-picture/1", profile.profilePictureUrl());
+    }
+
+    @Test
+    void uploadProfilePicture_Exito() {
+        MockMultipartFile file = new MockMultipartFile("file", "pic.png", "image/png", "data".getBytes());
+        when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
+        when(fileStorageService.uploadFile(any(), anyString())).thenReturn("profile-pictures/1/new_pic.png");
+
+        UserProfileDTO profile = usuarioService.uploadProfilePicture("test@test.com", file);
+
+        assertNotNull(profile);
+        assertEquals("/api/users/profile-picture/1", profile.profilePictureUrl());
+        verify(fileStorageService, times(1)).uploadFile(file, "profile-pictures/1");
+        verify(usuarioRepository, times(1)).save(usuario);
+    }
+
+    @Test
+    void deleteProfilePicture_Exito() {
+        usuario.setProfilePictureKey("profile-pictures/1/pic.png");
+        when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
+
+        UserProfileDTO profile = usuarioService.deleteProfilePicture("test@test.com");
+
+        assertNotNull(profile);
+        assertNull(profile.profilePictureUrl());
+        verify(fileStorageService, times(1)).deleteFile("profile-pictures/1/pic.png");
+        assertNull(usuario.getProfilePictureKey());
+        verify(usuarioRepository, times(1)).save(usuario);
+    }
+
+    @Test
+    void getProfilePicture_Exito() {
+        usuario.setProfilePictureKey("profile-pictures/1/pic.png");
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(fileStorageService.downloadFile("profile-pictures/1/pic.png")).thenReturn(new ByteArrayInputStream("data".getBytes()));
+
+        InputStream stream = usuarioService.getProfilePicture(1L);
+
+        assertNotNull(stream);
+        verify(fileStorageService, times(1)).downloadFile("profile-pictures/1/pic.png");
+    }
+
+    @Test
+    void getProfilePictureContentType_Exito() {
+        usuario.setProfilePictureKey("profile-pictures/1/pic.png");
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+
+        String contentType = usuarioService.getProfilePictureContentType(1L);
+
+        assertEquals("image/png", contentType);
     }
 }

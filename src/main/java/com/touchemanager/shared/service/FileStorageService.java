@@ -1,4 +1,4 @@
-package com.touchemanager.athlete.service;
+package com.touchemanager.shared.service;
 
 import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;

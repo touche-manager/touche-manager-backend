@@ -32,6 +32,9 @@ public class Usuario {
     @Column(nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
+    @Column(name = "profile_picture_key", length = 255)
+    private String profilePictureKey;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "usuario_roles",
