@@ -21,9 +21,6 @@ public class AthleteDocument {
     @JoinColumn(name = "athlete_id", nullable = false)
     private Athlete athlete;
 
-    @Column(name = "file_name", nullable = false)
-    private String fileName;
-
     @Column(name = "file_key", nullable = false, unique = true)
     private String fileKey;
 

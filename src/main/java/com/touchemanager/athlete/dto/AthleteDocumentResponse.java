@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 public record AthleteDocumentResponse(
         Long id,
         Long athleteId,
-        String fileName,
         String contentType,
         DocumentType documentType,
         String description,

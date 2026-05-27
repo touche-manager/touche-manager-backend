@@ -45,7 +45,6 @@ public class AthleteDocumentServiceImpl implements AthleteDocumentService {
 
         AthleteDocument document = new AthleteDocument();
         document.setAthlete(athlete);
-        document.setFileName(file.getOriginalFilename());
         document.setFileKey(fileKey);
         document.setContentType(file.getContentType());
         document.setDocumentType(type);
@@ -166,7 +165,6 @@ public class AthleteDocumentServiceImpl implements AthleteDocumentService {
         return new AthleteDocumentResponse(
                 document.getId(),
                 document.getAthlete().getId(),
-                document.getFileName(),
                 document.getContentType(),
                 document.getDocumentType(),
                 document.getDescription(),

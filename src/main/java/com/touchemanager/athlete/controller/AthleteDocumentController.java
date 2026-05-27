@@ -56,7 +56,7 @@ public class AthleteDocumentController {
         InputStream stream = athleteDocumentService.getDocumentFile(email, documentId);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + metadata.fileName() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + getDownloadFileName(metadata) + "\"")
                 .contentType(MediaType.parseMediaType(metadata.contentType()))
                 .body(new InputStreamResource(stream));
     }
@@ -88,8 +88,31 @@ public class AthleteDocumentController {
         InputStream stream = athleteDocumentService.getDocumentFileAsOrganizer(athleteId, documentId);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + metadata.fileName() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + getDownloadFileName(metadata) + "\"")
                 .contentType(MediaType.parseMediaType(metadata.contentType()))
                 .body(new InputStreamResource(stream));
+    }
+
+    private String getDownloadFileName(AthleteDocumentResponse metadata) {
+        String extension = "";
+        if (metadata.contentType() != null) {
+            String ct = metadata.contentType().toLowerCase();
+            if (ct.contains("pdf")) {
+                extension = ".pdf";
+            } else if (ct.contains("png")) {
+                extension = ".png";
+            } else if (ct.contains("jpeg") || ct.contains("jpg")) {
+                extension = ".jpg";
+            }
+        }
+        String typeNameInSpanish;
+        if (metadata.documentType() == DocumentType.MEDICAL_CLEARANCE) {
+            typeNameInSpanish = "Apto Médico";
+        } else if (metadata.documentType() == DocumentType.PAYMENT_RECEIPT) {
+            typeNameInSpanish = "Comprobante de Pago";
+        } else {
+            typeNameInSpanish = metadata.documentType().name();
+        }
+        return typeNameInSpanish + " " + metadata.uploadDate().getYear() + extension;
     }
 }

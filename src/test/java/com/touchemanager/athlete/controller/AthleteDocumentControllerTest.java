@@ -63,11 +63,10 @@ class AthleteDocumentControllerTest {
         docResponse = new AthleteDocumentResponse(
                 100L,
                 10L,
-                "test.pdf",
                 "application/pdf",
                 DocumentType.MEDICAL_CLEARANCE,
                 "Test Desc",
-                LocalDateTime.now()
+                LocalDateTime.of(2026, 5, 27, 12, 0)
         );
     }
 
@@ -96,8 +95,7 @@ class AthleteDocumentControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Document uploaded successfully"))
-                .andExpect(jsonPath("$.data.id").value(100L))
-                .andExpect(jsonPath("$.data.fileName").value("test.pdf"));
+                .andExpect(jsonPath("$.data.id").value(100L));
 
         verify(athleteDocumentService, times(1))
                 .uploadDocument(eq(email), any(), eq(DocumentType.MEDICAL_CLEARANCE), eq("Test Desc"));
@@ -126,7 +124,7 @@ class AthleteDocumentControllerTest {
         mockMvc.perform(get("/api/athletes/profile/documents/100")
                         .with(athleteUser()))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"test.pdf\""))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"Apto Médico 2026.pdf\""))
                 .andExpect(content().contentType(MediaType.APPLICATION_PDF));
 
         verify(athleteDocumentService, times(1)).getDocumentById(email, 100L);

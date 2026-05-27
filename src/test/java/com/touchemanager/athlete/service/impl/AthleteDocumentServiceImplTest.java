@@ -69,7 +69,6 @@ class AthleteDocumentServiceImplTest {
         document = new AthleteDocument();
         document.setId(100L);
         document.setAthlete(athlete);
-        document.setFileName("test.pdf");
         document.setFileKey("athletes/10/medical_clearance/key.pdf");
         document.setContentType("application/pdf");
         document.setDocumentType(DocumentType.MEDICAL_CLEARANCE);
@@ -96,12 +95,69 @@ class AthleteDocumentServiceImplTest {
 
         assertNotNull(response);
         assertEquals(document.getId(), response.id());
-        assertEquals(document.getFileName(), response.fileName());
         assertEquals(document.getDocumentType(), response.documentType());
 
         verify(usuarioRepository, times(1)).findByEmail(email);
         verify(athleteRepository, times(1)).findByUserId(usuario.getId());
         verify(fileStorageService, times(1)).uploadFile(any(), anyString());
+        verify(athleteDocumentRepository, times(1)).save(any(AthleteDocument.class));
+    }
+
+    @Test
+    void uploadDocument_WithDescription_RenamesFileCorrectly() {
+        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(fileStorageService.uploadFile(any(), anyString())).thenReturn("athletes/10/medical_clearance/key.pdf");
+        when(athleteDocumentRepository.save(any(AthleteDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AthleteDocumentResponse response = athleteDocumentService.uploadDocument(
+                email, mockFile, DocumentType.MEDICAL_CLEARANCE, "Mi Apto Medico Personalizado");
+
+        assertNotNull(response);
+        assertEquals("Mi Apto Medico Personalizado", response.description());
+        assertEquals(DocumentType.MEDICAL_CLEARANCE, response.documentType());
+
+        verify(athleteDocumentRepository, times(1)).save(any(AthleteDocument.class));
+    }
+
+    @Test
+    void uploadDocument_WithoutDescription_MedicalClearance_RenamesFileCorrectly() {
+        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(fileStorageService.uploadFile(any(), anyString())).thenReturn("athletes/10/medical_clearance/key.pdf");
+        when(athleteDocumentRepository.save(any(AthleteDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AthleteDocumentResponse response = athleteDocumentService.uploadDocument(
+                email, mockFile, DocumentType.MEDICAL_CLEARANCE, null);
+
+        assertNotNull(response);
+        assertNull(response.description());
+        assertEquals(DocumentType.MEDICAL_CLEARANCE, response.documentType());
+
+        verify(athleteDocumentRepository, times(1)).save(any(AthleteDocument.class));
+    }
+
+    @Test
+    void uploadDocument_WithoutDescription_PaymentReceipt_RenamesFileCorrectly() {
+        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(fileStorageService.uploadFile(any(), anyString())).thenReturn("athletes/10/payment_receipt/key.png");
+        when(athleteDocumentRepository.save(any(AthleteDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        MockMultipartFile mockPaymentFile = new MockMultipartFile(
+                "file",
+                "payment_original.png",
+                "image/png",
+                "payment data".getBytes()
+        );
+
+        AthleteDocumentResponse response = athleteDocumentService.uploadDocument(
+                email, mockPaymentFile, DocumentType.PAYMENT_RECEIPT, "   ");
+
+        assertNotNull(response);
+        assertEquals("   ", response.description());
+        assertEquals(DocumentType.PAYMENT_RECEIPT, response.documentType());
+
         verify(athleteDocumentRepository, times(1)).save(any(AthleteDocument.class));
     }
 
