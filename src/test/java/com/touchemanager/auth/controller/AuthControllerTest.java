@@ -2,8 +2,8 @@ package com.touchemanager.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.touchemanager.auth.dto.*;
-import com.touchemanager.auth.entity.NombreRol;
-import com.touchemanager.auth.service.UsuarioService;
+import com.touchemanager.auth.entity.RoleName;
+import com.touchemanager.auth.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -31,7 +30,7 @@ class AuthControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private UsuarioService usuarioService;
+    private UserService userService;
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -49,21 +48,21 @@ class AuthControllerTest {
         registerRequest = new RegisterRequestDTO();
         registerRequest.setEmail("test@test.com");
         registerRequest.setPassword("password123");
-        registerRequest.setRoles(Set.of(NombreRol.ATLETA));
+        registerRequest.setRoles(Set.of(RoleName.ATHLETE));
 
-        registerResponse = new RegisterResponseDTO(1L, "test@test.com", Set.of(NombreRol.ATLETA));
+        registerResponse = new RegisterResponseDTO(1L, "test@test.com", Set.of(RoleName.ATHLETE));
 
         loginRequest = new LoginRequestDTO();
         loginRequest.setEmail("test@test.com");
         loginRequest.setPassword("password123");
 
         selectRoleRequest = new SelectRoleRequestDTO();
-        selectRoleRequest.setRol(NombreRol.ATLETA);
+        selectRoleRequest.setRole(RoleName.ATHLETE);
     }
 
     @Test
     void register_Success() throws Exception {
-        when(usuarioService.registrar(any(RegisterRequestDTO.class))).thenReturn(registerResponse);
+        when(userService.register(any(RegisterRequestDTO.class))).thenReturn(registerResponse);
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -76,7 +75,7 @@ class AuthControllerTest {
     @Test
     void login_Success() throws Exception {
         LoginResponseDTO loginResponse = new LoginResponseDTO("token123", null);
-        when(usuarioService.login(any(LoginRequestDTO.class))).thenReturn(loginResponse);
+        when(userService.login(any(LoginRequestDTO.class))).thenReturn(loginResponse);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,7 +88,7 @@ class AuthControllerTest {
     @Test
     void selectRole_Success() throws Exception {
         LoginResponseDTO loginResponse = new LoginResponseDTO("token123", null);
-        when(usuarioService.selectRole(any(), any(SelectRoleRequestDTO.class))).thenReturn(loginResponse);
+        when(userService.selectRole(any(), any(SelectRoleRequestDTO.class))).thenReturn(loginResponse);
 
         mockMvc.perform(post("/api/auth/select-role")
                         .contentType(MediaType.APPLICATION_JSON)

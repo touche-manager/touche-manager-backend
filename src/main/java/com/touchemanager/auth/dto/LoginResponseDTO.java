@@ -1,6 +1,6 @@
 package com.touchemanager.auth.dto;
 
-import com.touchemanager.auth.entity.NombreRol;
+import com.touchemanager.auth.entity.RoleName;
 
 import java.util.Set;
 
@@ -11,5 +11,5 @@ import java.util.Set;
  */
 public record LoginResponseDTO(
         String token,
-        Set<NombreRol> roles
+        Set<RoleName> roles
 ) {}

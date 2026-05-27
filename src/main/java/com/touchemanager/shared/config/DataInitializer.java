@@ -1,8 +1,8 @@
 package com.touchemanager.shared.config;
 
-import com.touchemanager.auth.entity.NombreRol;
-import com.touchemanager.auth.entity.Rol;
-import com.touchemanager.auth.repository.RolRepository;
+import com.touchemanager.auth.entity.Role;
+import com.touchemanager.auth.entity.RoleName;
+import com.touchemanager.auth.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -13,12 +13,12 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private final RolRepository rolRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public void run(String... args) {
-        Arrays.stream(NombreRol.values())
-                .filter(nombre -> rolRepository.findByNombre(nombre).isEmpty())
-                .forEach(nombre -> rolRepository.save(new Rol(nombre)));
+        Arrays.stream(RoleName.values())
+                .filter(name -> roleRepository.findByName(name).isEmpty())
+                .forEach(name -> roleRepository.save(new Role(name)));
     }
 }

@@ -3,13 +3,13 @@ package com.touchemanager.athlete.service.impl;
 import com.touchemanager.athlete.dto.AthleteRequest;
 import com.touchemanager.athlete.dto.AthleteResponse;
 import com.touchemanager.athlete.entity.Athlete;
-import com.touchemanager.auth.entity.Usuario;
+import com.touchemanager.auth.entity.User;
 import com.touchemanager.athlete.repository.AthleteRepository;
-import com.touchemanager.auth.repository.UsuarioRepository;
+import com.touchemanager.auth.repository.UserRepository;
 import com.touchemanager.athlete.service.AthleteService;
 import com.touchemanager.shared.exception.AthleteAlreadyExistsException;
 import com.touchemanager.shared.exception.AthleteNotFoundException;
-import com.touchemanager.shared.exception.DniYaExisteException;
+import com.touchemanager.shared.exception.DniAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,15 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class AthleteServiceImpl implements AthleteService {
 
     private final AthleteRepository athleteRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
     public AthleteResponse getProfile(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
 
-        Athlete athlete = athleteRepository.findByUserId(usuario.getId())
+        Athlete athlete = athleteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AthleteNotFoundException(email));
 
         return mapToResponse(athlete);
@@ -36,19 +36,19 @@ public class AthleteServiceImpl implements AthleteService {
     @Override
     @Transactional
     public AthleteResponse createProfile(String email, AthleteRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
 
-        if (athleteRepository.findByUserId(usuario.getId()).isPresent()) {
+        if (athleteRepository.findByUserId(user.getId()).isPresent()) {
             throw new AthleteAlreadyExistsException(email);
         }
 
         if (athleteRepository.existsByDni(request.getDni())) {
-            throw new DniYaExisteException(request.getDni());
+            throw new DniAlreadyExistsException(request.getDni());
         }
 
         Athlete athlete = new Athlete();
-        athlete.setUser(usuario);
+        athlete.setUser(user);
         athlete.setFirstName(request.getFirstName());
         athlete.setLastName(request.getLastName());
         athlete.setDni(request.getDni());
@@ -65,15 +65,15 @@ public class AthleteServiceImpl implements AthleteService {
     @Override
     @Transactional
     public AthleteResponse updateProfile(String email, AthleteRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
 
-        Athlete athlete = athleteRepository.findByUserId(usuario.getId())
+        Athlete athlete = athleteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AthleteNotFoundException(email));
 
         athleteRepository.findByDni(request.getDni()).ifPresent(other -> {
             if (!other.getId().equals(athlete.getId())) {
-                throw new DniYaExisteException(request.getDni());
+                throw new DniAlreadyExistsException(request.getDni());
             }
         });
 

@@ -1,7 +1,7 @@
 package com.touchemanager.auth.controller;
 
 import com.touchemanager.auth.dto.UserProfileDTO;
-import com.touchemanager.auth.service.UsuarioService;
+import com.touchemanager.auth.service.UserService;
 import com.touchemanager.shared.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -23,13 +23,13 @@ import java.io.InputStream;
 @Tag(name = "User Profile", description = "Operations related to user account profile and picture")
 public class UserController {
 
-    private final UsuarioService usuarioService;
+    private final UserService userService;
 
     @GetMapping("/profile")
     @Operation(summary = "Get the active user's profile details",
                security = @SecurityRequirement(name = "bearerAuth"))
     public ApiResponse<UserProfileDTO> getProfile(@AuthenticationPrincipal String email) {
-        UserProfileDTO response = usuarioService.getProfile(email);
+        UserProfileDTO response = userService.getProfile(email);
         return new ApiResponse<>(true, "Profile details retrieved successfully", response);
     }
 
@@ -39,7 +39,7 @@ public class UserController {
     public ApiResponse<UserProfileDTO> uploadProfilePicture(
             @AuthenticationPrincipal String email,
             @RequestParam("file") MultipartFile file) {
-        UserProfileDTO response = usuarioService.uploadProfilePicture(email, file);
+        UserProfileDTO response = userService.uploadProfilePicture(email, file);
         return new ApiResponse<>(true, "Profile picture uploaded successfully", response);
     }
 
@@ -47,15 +47,15 @@ public class UserController {
     @Operation(summary = "Delete the active user's profile picture",
                security = @SecurityRequirement(name = "bearerAuth"))
     public ApiResponse<UserProfileDTO> deleteProfilePicture(@AuthenticationPrincipal String email) {
-        UserProfileDTO response = usuarioService.deleteProfilePicture(email);
+        UserProfileDTO response = userService.deleteProfilePicture(email);
         return new ApiResponse<>(true, "Profile picture deleted successfully", response);
     }
 
     @GetMapping("/profile-picture/{userId}")
     @Operation(summary = "Download or view a user's profile picture (Public)")
     public ResponseEntity<Resource> getProfilePicture(@PathVariable Long userId) {
-        InputStream stream = usuarioService.getProfilePicture(userId);
-        String contentType = usuarioService.getProfilePictureContentType(userId);
+        InputStream stream = userService.getProfilePicture(userId);
+        String contentType = userService.getProfilePictureContentType(userId);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))

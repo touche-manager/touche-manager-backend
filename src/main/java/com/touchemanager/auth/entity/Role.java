@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Rol {
+public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,9 +18,9 @@ public class Rol {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true, length = 20)
-    private NombreRol nombre;
+    private RoleName name;
 
-    public Rol(NombreRol nombre) {
-        this.nombre = nombre;
+    public Role(RoleName name) {
+        this.name = name;
     }
 }

@@ -1,6 +1,6 @@
 package com.touchemanager.auth.service;
 
-import com.touchemanager.auth.entity.NombreRol;
+import com.touchemanager.auth.entity.RoleName;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ class JwtServiceTest {
 
     private JwtService jwtService;
     private final String secret = "mySecretKeyForTestingPurposesThatIsAtLeast32BytesLong!";
-    private final long expirationMs = 3600000; // 1 hora
+    private final long expirationMs = 3600000; // 1 hour
 
     @BeforeEach
     void setUp() {
@@ -19,54 +19,52 @@ class JwtServiceTest {
     }
 
     @Test
-    void generateToken_WithRol_Success() {
-        String token = jwtService.generateToken(1L, "user@test.com", NombreRol.ATLETA);
+    void generateToken_WithRole_Success() {
+        String token = jwtService.generateToken(1L, "user@test.com", RoleName.ATHLETE);
 
         assertNotNull(token);
         assertFalse(token.isEmpty());
 
         assertEquals("user@test.com", jwtService.extractEmail(token));
-        assertEquals(NombreRol.ATLETA.name(), jwtService.extractRol(token));
+        assertEquals(RoleName.ATHLETE.name(), jwtService.extractRole(token));
         assertTrue(jwtService.isTokenValid(token));
     }
 
     @Test
-    void generateToken_WithoutRol_Success() {
+    void generateToken_WithoutRole_Success() {
         String token = jwtService.generateToken(2L, "admin@test.com", null);
 
         assertNotNull(token);
         assertFalse(token.isEmpty());
 
         assertEquals("admin@test.com", jwtService.extractEmail(token));
-        assertNull(jwtService.extractRol(token));
+        assertNull(jwtService.extractRole(token));
         assertTrue(jwtService.isTokenValid(token));
     }
 
     @Test
     void extractClaims_Success() {
-        String token = jwtService.generateToken(1L, "user@test.com", NombreRol.ATLETA);
+        String token = jwtService.generateToken(1L, "user@test.com", RoleName.ATHLETE);
 
         Claims claims = jwtService.extractAllClaims(token);
         assertNotNull(claims);
         assertEquals("user@test.com", claims.getSubject());
         assertEquals(1L, claims.get("userId", Long.class));
-        assertEquals(NombreRol.ATLETA.name(), claims.get("rol", String.class));
+        assertEquals(RoleName.ATHLETE.name(), claims.get("role", String.class));
     }
 
     @Test
     void isTokenValid_ExpiredToken() {
-        // Creamos un JwtService con tiempo de expiración negativo para que expire inmediatamente
         JwtService expiredJwtService = new JwtService(secret, -1000);
-        String token = expiredJwtService.generateToken(1L, "expired@test.com", NombreRol.ATLETA);
+        String token = expiredJwtService.generateToken(1L, "expired@test.com", RoleName.ATHLETE);
 
         assertFalse(expiredJwtService.isTokenValid(token));
     }
 
     @Test
     void isTokenValid_InvalidSignature() {
-        String token = jwtService.generateToken(1L, "user@test.com", NombreRol.ATLETA);
+        String token = jwtService.generateToken(1L, "user@test.com", RoleName.ATHLETE);
 
-        // Creamos otro JwtService con una firma secreta distinta
         String differentSecret = "anotherSecretKeyForTestingPurposesThatIsAtLeast32BytesLong!";
         JwtService differentJwtService = new JwtService(differentSecret, expirationMs);
 

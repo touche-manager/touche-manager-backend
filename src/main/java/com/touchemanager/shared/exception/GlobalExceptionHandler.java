@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EmailYaExisteException.class)
+    @ExceptionHandler(EmailAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiResponse<Void> handleEmailYaExiste(EmailYaExisteException ex) {
+    public ApiResponse<Void> handleEmailAlreadyExists(EmailAlreadyExistsException ex) {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
@@ -25,9 +25,9 @@ public class GlobalExceptionHandler {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
-    @ExceptionHandler(DniYaExisteException.class)
+    @ExceptionHandler(DniAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiResponse<Void> handleDniYaExiste(DniYaExisteException ex) {
+    public ApiResponse<Void> handleDniAlreadyExists(DniAlreadyExistsException ex) {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
@@ -43,25 +43,25 @@ public class GlobalExceptionHandler {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
-    @ExceptionHandler(RolNoEncontradoException.class)
+    @ExceptionHandler(RoleNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResponse<Void> handleRolNoEncontrado(RolNoEncontradoException ex) {
+    public ApiResponse<Void> handleRoleNotFound(RoleNotFoundException ex) {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
-    @ExceptionHandler(RolNoAsignadoException.class)
+    @ExceptionHandler(RoleNotAssignedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ApiResponse<Void> handleRolNoAsignado(RolNoAsignadoException ex) {
+    public ApiResponse<Void> handleRoleNotAssigned(RoleNotAssignedException ex) {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResponse<Void> handleValidacion(MethodArgumentNotValidException ex) {
-        String mensaje = ex.getBindingResult().getFieldErrors().stream()
+    public ApiResponse<Void> handleValidation(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
-        return new ApiResponse<>(false, mensaje, null);
+        return new ApiResponse<>(false, message, null);
     }
 
     @ExceptionHandler(DocumentNotFoundException.class)
@@ -70,15 +70,15 @@ public class GlobalExceptionHandler {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
-    @ExceptionHandler(UsuarioNoEncontradoException.class)
+    @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiResponse<Void> handleUsuarioNoEncontrado(UsuarioNoEncontradoException ex) {
+    public ApiResponse<Void> handleUserNotFound(UserNotFoundException ex) {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiResponse<Void> handleGenerico(Exception ex) {
+    public ApiResponse<Void> handleGeneric(Exception ex) {
         return new ApiResponse<>(false, "Internal server error", null);
     }
 }

@@ -1,6 +1,6 @@
 package com.touchemanager.auth.dto;
 
-import com.touchemanager.auth.entity.NombreRol;
+import com.touchemanager.auth.entity.RoleName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -21,5 +21,5 @@ public class RegisterRequestDTO {
     private String password;
 
     @NotEmpty(message = "At least one role must be selected")
-    private Set<NombreRol> roles;
+    private Set<RoleName> roles;
 }

@@ -7,8 +7,8 @@ import com.touchemanager.athlete.entity.DocumentType;
 import com.touchemanager.athlete.repository.AthleteDocumentRepository;
 import com.touchemanager.athlete.repository.AthleteRepository;
 import com.touchemanager.shared.service.FileStorageService;
-import com.touchemanager.auth.entity.Usuario;
-import com.touchemanager.auth.repository.UsuarioRepository;
+import com.touchemanager.auth.entity.User;
+import com.touchemanager.auth.repository.UserRepository;
 import com.touchemanager.shared.exception.AthleteNotFoundException;
 import com.touchemanager.shared.exception.DocumentNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +40,7 @@ class AthleteDocumentServiceImplTest {
     private AthleteRepository athleteRepository;
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
 
     @Mock
     private FileStorageService fileStorageService;
@@ -48,7 +48,7 @@ class AthleteDocumentServiceImplTest {
     @InjectMocks
     private AthleteDocumentServiceImpl athleteDocumentService;
 
-    private Usuario usuario;
+    private User user;
     private Athlete athlete;
     private AthleteDocument document;
     private String email;
@@ -58,13 +58,13 @@ class AthleteDocumentServiceImplTest {
     void setUp() {
         email = "athlete@test.com";
 
-        usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setEmail(email);
+        user = new User();
+        user.setId(1L);
+        user.setEmail(email);
 
         athlete = new Athlete();
         athlete.setId(10L);
-        athlete.setUser(usuario);
+        athlete.setUser(user);
 
         document = new AthleteDocument();
         document.setId(100L);
@@ -85,8 +85,8 @@ class AthleteDocumentServiceImplTest {
 
     @Test
     void uploadDocument_Success() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(fileStorageService.uploadFile(any(), anyString())).thenReturn("athletes/10/medical_clearance/key.pdf");
         when(athleteDocumentRepository.save(any(AthleteDocument.class))).thenReturn(document);
 
@@ -97,16 +97,16 @@ class AthleteDocumentServiceImplTest {
         assertEquals(document.getId(), response.id());
         assertEquals(document.getDocumentType(), response.documentType());
 
-        verify(usuarioRepository, times(1)).findByEmail(email);
-        verify(athleteRepository, times(1)).findByUserId(usuario.getId());
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(athleteRepository, times(1)).findByUserId(user.getId());
         verify(fileStorageService, times(1)).uploadFile(any(), anyString());
         verify(athleteDocumentRepository, times(1)).save(any(AthleteDocument.class));
     }
 
     @Test
     void uploadDocument_WithDescription_RenamesFileCorrectly() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(fileStorageService.uploadFile(any(), anyString())).thenReturn("athletes/10/medical_clearance/key.pdf");
         when(athleteDocumentRepository.save(any(AthleteDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -122,8 +122,8 @@ class AthleteDocumentServiceImplTest {
 
     @Test
     void uploadDocument_WithoutDescription_MedicalClearance_RenamesFileCorrectly() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(fileStorageService.uploadFile(any(), anyString())).thenReturn("athletes/10/medical_clearance/key.pdf");
         when(athleteDocumentRepository.save(any(AthleteDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -139,8 +139,8 @@ class AthleteDocumentServiceImplTest {
 
     @Test
     void uploadDocument_WithoutDescription_PaymentReceipt_RenamesFileCorrectly() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(fileStorageService.uploadFile(any(), anyString())).thenReturn("athletes/10/payment_receipt/key.png");
         when(athleteDocumentRepository.save(any(AthleteDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -163,19 +163,19 @@ class AthleteDocumentServiceImplTest {
 
     @Test
     void uploadDocument_UserNotFound() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> athleteDocumentService.uploadDocument(
                 email, mockFile, DocumentType.MEDICAL_CLEARANCE, "Test Desc"));
 
-        verify(usuarioRepository, times(1)).findByEmail(email);
+        verify(userRepository, times(1)).findByEmail(email);
         verifyNoInteractions(athleteRepository, fileStorageService, athleteDocumentRepository);
     }
 
     @Test
     void getMyDocuments_Success() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(athleteDocumentRepository.findByAthleteId(athlete.getId())).thenReturn(List.of(document));
 
         List<AthleteDocumentResponse> docs = athleteDocumentService.getMyDocuments(email);
@@ -184,8 +184,8 @@ class AthleteDocumentServiceImplTest {
         assertEquals(1, docs.size());
         assertEquals(document.getId(), docs.get(0).id());
 
-        verify(usuarioRepository, times(1)).findByEmail(email);
-        verify(athleteRepository, times(1)).findByUserId(usuario.getId());
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(athleteRepository, times(1)).findByUserId(user.getId());
         verify(athleteDocumentRepository, times(1)).findByAthleteId(athlete.getId());
     }
 
@@ -203,8 +203,8 @@ class AthleteDocumentServiceImplTest {
 
     @Test
     void getDocumentById_Success() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(athleteDocumentRepository.findById(100L)).thenReturn(Optional.of(document));
 
         AthleteDocumentResponse res = athleteDocumentService.getDocumentById(email, 100L);
@@ -215,8 +215,8 @@ class AthleteDocumentServiceImplTest {
 
     @Test
     void getDocumentById_DocumentNotFound() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(athleteDocumentRepository.findById(100L)).thenReturn(Optional.empty());
 
         assertThrows(DocumentNotFoundException.class, () -> athleteDocumentService.getDocumentById(email, 100L));
@@ -228,8 +228,8 @@ class AthleteDocumentServiceImplTest {
         otherAthlete.setId(99L);
         document.setAthlete(otherAthlete); // mismatch
 
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(athleteDocumentRepository.findById(100L)).thenReturn(Optional.of(document));
 
         assertThrows(AccessDeniedException.class, () -> athleteDocumentService.getDocumentById(email, 100L));
@@ -237,8 +237,8 @@ class AthleteDocumentServiceImplTest {
 
     @Test
     void getDocumentFile_Success() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(athleteDocumentRepository.findById(100L)).thenReturn(Optional.of(document));
         when(fileStorageService.downloadFile(document.getFileKey())).thenReturn(new ByteArrayInputStream("data".getBytes()));
 
@@ -250,8 +250,8 @@ class AthleteDocumentServiceImplTest {
 
     @Test
     void deleteDocument_Success() {
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        when(athleteRepository.findByUserId(usuario.getId())).thenReturn(Optional.of(athlete));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(athleteRepository.findByUserId(user.getId())).thenReturn(Optional.of(athlete));
         when(athleteDocumentRepository.findById(100L)).thenReturn(Optional.of(document));
 
         athleteDocumentService.deleteDocument(email, 100L);

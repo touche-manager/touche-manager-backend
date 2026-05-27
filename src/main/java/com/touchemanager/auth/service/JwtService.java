@@ -1,6 +1,6 @@
 package com.touchemanager.auth.service;
 
-import com.touchemanager.auth.entity.NombreRol;
+import com.touchemanager.auth.entity.RoleName;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -24,7 +24,7 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(Long userId, String email, NombreRol rol) {
+    public String generateToken(Long userId, String email, RoleName role) {
         var builder = Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
@@ -32,8 +32,8 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(signingKey);
 
-        if (rol != null) {
-            builder.claim("rol", rol.name());
+        if (role != null) {
+            builder.claim("role", role.name());
         }
 
         return builder.compact();
@@ -51,8 +51,8 @@ public class JwtService {
         return extractAllClaims(token).getSubject();
     }
 
-    public String extractRol(String token) {
-        return extractAllClaims(token).get("rol", String.class);
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
     }
 
     public boolean isTokenValid(String token) {

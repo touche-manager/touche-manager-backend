@@ -1,7 +1,7 @@
 package com.touchemanager.auth.service.impl;
 
-import com.touchemanager.auth.entity.Usuario;
-import com.touchemanager.auth.repository.UsuarioRepository;
+import com.touchemanager.auth.entity.User;
+import com.touchemanager.auth.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 class UserDetailsServiceImplTest {
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
 
     @InjectMocks
     private UserDetailsServiceImpl userDetailsService;
@@ -27,26 +27,26 @@ class UserDetailsServiceImplTest {
     @Test
     void loadUserByUsername_Success() {
         String email = "test@test.com";
-        Usuario usuario = new Usuario();
-        usuario.setEmail(email);
-        usuario.setPassword("encodedPassword");
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword("encodedPassword");
 
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
         assertNotNull(userDetails);
         assertEquals(email, userDetails.getUsername());
         assertEquals("encodedPassword", userDetails.getPassword());
-        verify(usuarioRepository, times(1)).findByEmail(email);
+        verify(userRepository, times(1)).findByEmail(email);
     }
 
     @Test
     void loadUserByUsername_UserNotFound() {
         String email = "notfound@test.com";
-        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername(email));
-        verify(usuarioRepository, times(1)).findByEmail(email);
+        verify(userRepository, times(1)).findByEmail(email);
     }
 }

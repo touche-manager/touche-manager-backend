@@ -8,8 +8,8 @@ import com.touchemanager.athlete.repository.AthleteDocumentRepository;
 import com.touchemanager.athlete.repository.AthleteRepository;
 import com.touchemanager.athlete.service.AthleteDocumentService;
 import com.touchemanager.shared.service.FileStorageService;
-import com.touchemanager.auth.entity.Usuario;
-import com.touchemanager.auth.repository.UsuarioRepository;
+import com.touchemanager.auth.entity.User;
+import com.touchemanager.auth.repository.UserRepository;
 import com.touchemanager.shared.exception.AthleteNotFoundException;
 import com.touchemanager.shared.exception.DocumentNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,16 +28,16 @@ public class AthleteDocumentServiceImpl implements AthleteDocumentService {
 
     private final AthleteDocumentRepository athleteDocumentRepository;
     private final AthleteRepository athleteRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
     public AthleteDocumentResponse uploadDocument(String email, MultipartFile file, DocumentType type, String description) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
 
-        Athlete athlete = athleteRepository.findByUserId(usuario.getId())
+        Athlete athlete = athleteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AthleteNotFoundException(email));
 
         String directory = "athletes/" + athlete.getId() + "/" + type.name().toLowerCase();
@@ -58,10 +58,10 @@ public class AthleteDocumentServiceImpl implements AthleteDocumentService {
     @Override
     @Transactional(readOnly = true)
     public List<AthleteDocumentResponse> getMyDocuments(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
 
-        Athlete athlete = athleteRepository.findByUserId(usuario.getId())
+        Athlete athlete = athleteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AthleteNotFoundException(email));
 
         return athleteDocumentRepository.findByAthleteId(athlete.getId()).stream()
@@ -80,10 +80,10 @@ public class AthleteDocumentServiceImpl implements AthleteDocumentService {
     @Override
     @Transactional(readOnly = true)
     public AthleteDocumentResponse getDocumentById(String email, Long documentId) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
 
-        Athlete athlete = athleteRepository.findByUserId(usuario.getId())
+        Athlete athlete = athleteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AthleteNotFoundException(email));
 
         AthleteDocument document = athleteDocumentRepository.findById(documentId)
@@ -112,10 +112,10 @@ public class AthleteDocumentServiceImpl implements AthleteDocumentService {
     @Override
     @Transactional(readOnly = true)
     public InputStream getDocumentFile(String email, Long documentId) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
 
-        Athlete athlete = athleteRepository.findByUserId(usuario.getId())
+        Athlete athlete = athleteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AthleteNotFoundException(email));
 
         AthleteDocument document = athleteDocumentRepository.findById(documentId)
@@ -144,10 +144,10 @@ public class AthleteDocumentServiceImpl implements AthleteDocumentService {
     @Override
     @Transactional
     public void deleteDocument(String email, Long documentId) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
 
-        Athlete athlete = athleteRepository.findByUserId(usuario.getId())
+        Athlete athlete = athleteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AthleteNotFoundException(email));
 
         AthleteDocument document = athleteDocumentRepository.findById(documentId)

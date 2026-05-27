@@ -1,7 +1,7 @@
 package com.touchemanager.auth.controller;
 
 import com.touchemanager.auth.dto.*;
-import com.touchemanager.auth.service.UsuarioService;
+import com.touchemanager.auth.service.UserService;
 import com.touchemanager.shared.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -18,20 +18,20 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Auth", description = "User registration and authentication")
 public class AuthController {
 
-    private final UsuarioService usuarioService;
+    private final UserService userService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Register a new user")
     public ApiResponse<RegisterResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
-        RegisterResponseDTO response = usuarioService.registrar(request);
+        RegisterResponseDTO response = userService.register(request);
         return new ApiResponse<>(true, "User registered successfully", response);
     }
 
     @PostMapping("/login")
     @Operation(summary = "Login with email and password")
     public ApiResponse<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
-        LoginResponseDTO response = usuarioService.login(request);
+        LoginResponseDTO response = userService.login(request);
         return new ApiResponse<>(true, "Login successful", response);
     }
 
@@ -41,7 +41,7 @@ public class AuthController {
     public ApiResponse<LoginResponseDTO> selectRole(
             @AuthenticationPrincipal String email,
             @Valid @RequestBody SelectRoleRequestDTO request) {
-        LoginResponseDTO response = usuarioService.selectRole(email, request);
+        LoginResponseDTO response = userService.selectRole(email, request);
         return new ApiResponse<>(true, "Role selected successfully", response);
     }
 }

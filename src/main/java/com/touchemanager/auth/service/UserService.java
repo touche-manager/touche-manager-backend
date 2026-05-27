@@ -5,9 +5,9 @@ import com.touchemanager.auth.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 
-public interface UsuarioService {
+public interface UserService {
 
-    RegisterResponseDTO registrar(RegisterRequestDTO request);
+    RegisterResponseDTO register(RegisterRequestDTO request);
 
     LoginResponseDTO login(LoginRequestDTO request);
 

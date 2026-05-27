@@ -1,6 +1,6 @@
 package com.touchemanager.athlete.entity;
 
-import com.touchemanager.auth.entity.Usuario;
+import com.touchemanager.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,8 +20,8 @@ public class Athlete {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
-    private Usuario user;
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
