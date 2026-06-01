@@ -70,38 +70,35 @@ class EnrollmentServiceImplTest {
         testAthlete.setFirstName("Juan");
         testAthlete.setLastName("Perez");
 
-        regularTournament = new Tournament(
-                100L,
-                "Copa Regular",
-                Weapon.FOIL,
-                Category.SENIOR,
-                Gender.MALE,
-                "Sede Regular",
-                LocalDate.now().plusDays(20),
-                BigDecimal.valueOf(1000.00)
-        );
+        regularTournament = new Tournament();
+        regularTournament.setId(100L);
+        regularTournament.setName("Copa Regular");
+        regularTournament.setWeapon(Weapon.FOIL);
+        regularTournament.setCategory(Category.SENIOR);
+        regularTournament.setGender(Gender.MALE);
+        regularTournament.setLocation("Sede Regular");
+        regularTournament.setDate(LocalDate.now().plusDays(20));
+        regularTournament.setBasePrice(BigDecimal.valueOf(1000.00));
 
-        lateTournament = new Tournament(
-                101L,
-                "Copa Tardia",
-                Weapon.EPEE,
-                Category.CADET,
-                Gender.FEMALE,
-                "Sede Tardia",
-                LocalDate.now().plusDays(8),
-                BigDecimal.valueOf(1000.00)
-        );
+        lateTournament = new Tournament();
+        lateTournament.setId(101L);
+        lateTournament.setName("Copa Tardia");
+        lateTournament.setWeapon(Weapon.EPEE);
+        lateTournament.setCategory(Category.CADET);
+        lateTournament.setGender(Gender.FEMALE);
+        lateTournament.setLocation("Sede Tardia");
+        lateTournament.setDate(LocalDate.now().plusDays(8));
+        lateTournament.setBasePrice(BigDecimal.valueOf(1000.00));
 
-        closedTournament = new Tournament(
-                102L,
-                "Copa Cerrada",
-                Weapon.SABRE,
-                Category.JUNIOR,
-                Gender.MALE,
-                "Sede Cerrada",
-                LocalDate.now().plusDays(4),
-                BigDecimal.valueOf(1000.00)
-        );
+        closedTournament = new Tournament();
+        closedTournament.setId(102L);
+        closedTournament.setName("Copa Cerrada");
+        closedTournament.setWeapon(Weapon.SABRE);
+        closedTournament.setCategory(Category.JUNIOR);
+        closedTournament.setGender(Gender.MALE);
+        closedTournament.setLocation("Sede Cerrada");
+        closedTournament.setDate(LocalDate.now().plusDays(4));
+        closedTournament.setBasePrice(BigDecimal.valueOf(1000.00));
     }
 
     private List<AthleteDocument> createCompleteDocuments() {
@@ -160,16 +157,16 @@ class EnrollmentServiceImplTest {
         try (MockedStatic<LocalDate> mockedLocalDate = mockStatic(LocalDate.class, CALLS_REAL_METHODS)) {
             mockedLocalDate.when(LocalDate::now).thenReturn(fixedToday);
 
-            Tournament customLateTournament = new Tournament(
-                    101L,
-                    "Copa Tardia",
-                    Weapon.EPEE,
-                    Category.CADET,
-                    Gender.FEMALE,
-                    "Sede Tardia",
-                    tournamentDate,
-                    BigDecimal.valueOf(1000.00)
-            );
+            Tournament customLateTournament = new Tournament();
+            customLateTournament.setId(101L);
+            customLateTournament.setName("Copa Tardia");
+            customLateTournament.setWeapon(Weapon.EPEE);
+            customLateTournament.setCategory(Category.CADET);
+            customLateTournament.setGender(Gender.FEMALE);
+            customLateTournament.setLocation("Sede Tardia");
+            customLateTournament.setDate(tournamentDate);
+            customLateTournament.setBasePrice(BigDecimal.valueOf(1000.00));
+
 
             EnrollmentRequest request = new EnrollmentRequest(customLateTournament.getId());
 

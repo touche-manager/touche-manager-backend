@@ -61,19 +61,24 @@ class TournamentServiceImplTest {
         testAthlete.setLastName("Perez");
     }
 
+    private Tournament makeTournament(long id, String name, Weapon weapon, Category cat,
+                                      Gender gender, String location, LocalDate date, BigDecimal price) {
+        Tournament t = new Tournament();
+        t.setId(id);
+        t.setName(name);
+        t.setWeapon(weapon);
+        t.setCategory(cat);
+        t.setGender(gender);
+        t.setLocation(location);
+        t.setDate(date);
+        t.setBasePrice(price);
+        return t;
+    }
+
     @Test
     void getAvailableTournaments_RegularPricingPeriod_ReturnsBasePrice() {
-        // Tournament in 15 days -> Regular pricing period
-        Tournament tournament = new Tournament(
-                100L,
-                "Copa Test",
-                Weapon.FOIL,
-                Category.SENIOR,
-                Gender.MALE,
-                "Club de Prueba",
-                LocalDate.now().plusDays(15),
-                BigDecimal.valueOf(1000.00)
-        );
+        Tournament tournament = makeTournament(100L, "Copa Test", Weapon.FOIL, Category.SENIOR,
+                Gender.MALE, "Club de Prueba", LocalDate.now().plusDays(15), BigDecimal.valueOf(1000.00));
 
         when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
         when(athleteRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testAthlete));
@@ -100,16 +105,8 @@ class TournamentServiceImplTest {
         try (MockedStatic<LocalDate> mockedLocalDate = mockStatic(LocalDate.class, CALLS_REAL_METHODS)) {
             mockedLocalDate.when(LocalDate::now).thenReturn(fixedToday);
 
-            Tournament tournament = new Tournament(
-                    101L,
-                    "Copa Tardia",
-                    Weapon.EPEE,
-                    Category.CADET,
-                    Gender.FEMALE,
-                    "Sede Club",
-                    tournamentDate,
-                    BigDecimal.valueOf(1000.00)
-            );
+            Tournament tournament = makeTournament(101L, "Copa Tardia", Weapon.EPEE, Category.CADET,
+                    Gender.FEMALE, "Sede Club", tournamentDate, BigDecimal.valueOf(1000.00));
 
             when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
             when(athleteRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testAthlete));
@@ -122,7 +119,6 @@ class TournamentServiceImplTest {
             assertEquals(1, responses.size());
             TournamentResponse resp = responses.get(0);
             assertEquals("OPEN_LATE", resp.enrollmentStatus());
-            // $1000 * 1.5 = $1500
             assertEquals(0, resp.currentPrice().compareTo(BigDecimal.valueOf(1500.00)));
             assertFalse(resp.alreadyEnrolled());
         }
@@ -130,17 +126,8 @@ class TournamentServiceImplTest {
 
     @Test
     void getAvailableTournaments_ClosedPricingPeriod_ReturnsClosedStatus() {
-        // Tournament in 4 days -> Registration is closed (less than 8 days)
-        Tournament tournament = new Tournament(
-                102L,
-                "Copa Cerrada",
-                Weapon.SABRE,
-                Category.JUNIOR,
-                Gender.MALE,
-                "Sede Club 2",
-                LocalDate.now().plusDays(4),
-                BigDecimal.valueOf(1000.00)
-        );
+        Tournament tournament = makeTournament(102L, "Copa Cerrada", Weapon.SABRE, Category.JUNIOR,
+                Gender.MALE, "Sede Club 2", LocalDate.now().plusDays(4), BigDecimal.valueOf(1000.00));
 
         when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
         when(athleteRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testAthlete));
@@ -158,16 +145,8 @@ class TournamentServiceImplTest {
 
     @Test
     void getAvailableTournaments_AlreadyEnrolled_ReturnsEnrolledDetails() {
-        Tournament tournament = new Tournament(
-                103L,
-                "Copa Inscripto",
-                Weapon.FOIL,
-                Category.SENIOR,
-                Gender.MALE,
-                "Sede Club 3",
-                LocalDate.now().plusDays(20),
-                BigDecimal.valueOf(1000.00)
-        );
+        Tournament tournament = makeTournament(103L, "Copa Inscripto", Weapon.FOIL, Category.SENIOR,
+                Gender.MALE, "Sede Club 3", LocalDate.now().plusDays(20), BigDecimal.valueOf(1000.00));
 
         Enrollment mockEnrollment = new Enrollment();
         mockEnrollment.setId(500L);
@@ -192,16 +171,8 @@ class TournamentServiceImplTest {
 
     @Test
     void getAvailableTournaments_CancelledEnrollment_ReturnsNotEnrolled() {
-        Tournament tournament = new Tournament(
-                104L,
-                "Copa Cancelada",
-                Weapon.FOIL,
-                Category.SENIOR,
-                Gender.MALE,
-                "Sede Club 4",
-                LocalDate.now().plusDays(20),
-                BigDecimal.valueOf(1000.00)
-        );
+        Tournament tournament = makeTournament(104L, "Copa Cancelada", Weapon.FOIL, Category.SENIOR,
+                Gender.MALE, "Sede Club 4", LocalDate.now().plusDays(20), BigDecimal.valueOf(1000.00));
 
         Enrollment mockEnrollment = new Enrollment();
         mockEnrollment.setId(600L);

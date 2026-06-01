@@ -87,4 +87,22 @@ public class GlobalExceptionHandler {
     public ApiResponse<Void> handleGeneric(Exception ex) {
         return new ApiResponse<>(false, "Internal server error", null);
     }
+
+    @ExceptionHandler(TournamentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiResponse<Void> handleTournamentNotFound(TournamentNotFoundException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(TournamentNotOwnedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponse<Void> handleTournamentNotOwned(TournamentNotOwnedException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(BoutNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiResponse<Void> handleBoutNotFound(BoutNotFoundException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
 }

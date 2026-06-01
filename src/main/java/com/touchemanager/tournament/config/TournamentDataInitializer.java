@@ -24,53 +24,41 @@ public class TournamentDataInitializer implements CommandLineRunner {
         if (tournamentRepository.count() == 0) {
             LocalDate today = LocalDate.now();
 
-            Tournament t1 = new Tournament(
-                    null,
-                    "Copa República - Florete Senior Masculino",
-                    Weapon.FOIL,
-                    Category.SENIOR,
-                    Gender.MALE,
-                    "Club Universitario de Córdoba",
-                    today.plusDays(15),
-                    BigDecimal.valueOf(10000.00)
-            );
+            Tournament t1 = new Tournament();
+            t1.setName("Copa República - Florete Senior Masculino");
+            t1.setWeapon(Weapon.FOIL);
+            t1.setCategory(Category.SENIOR);
+            t1.setGender(Gender.MALE);
+            t1.setLocation("Club Universitario de Córdoba");
+            t1.setDate(today.plusDays(15));
+            t1.setBasePrice(BigDecimal.valueOf(10000.00));
 
-            Tournament t2 = new Tournament(
-                    null,
-                    "Nacional de Espada Cadetes Femenino",
-                    Weapon.EPEE,
-                    Category.CADET,
-                    Gender.FEMALE,
-                    "Gimnasia y Esgrima de Rosario",
-                    today.plusDays(9),
-                    BigDecimal.valueOf(8000.00) // Will calculate to 12000 (late fee)
-            );
+            Tournament t2 = new Tournament();
+            t2.setName("Nacional de Espada Cadetes Femenino");
+            t2.setWeapon(Weapon.EPEE);
+            t2.setCategory(Category.CADET);
+            t2.setGender(Gender.FEMALE);
+            t2.setLocation("Gimnasia y Esgrima de Rosario");
+            t2.setDate(today.plusDays(9));
+            t2.setBasePrice(BigDecimal.valueOf(8000.00));
 
-            Tournament t3 = new Tournament(
-                    null,
-                    "Torneo Relámpago - Sable Juvenil Mixto",
-                    Weapon.SABRE,
-                    Category.JUNIOR,
-                    Gender.FEMALE, // Gender matches existing Gender MALE/FEMALE. If MIXED is needed but Gender has only MALE/FEMALE, let's check!
-                    // Wait, Athlete.Gender has only MALE and FEMALE.
-                    // Let's use FEMALE or MALE for tournament 3 to avoid Gender enum validation issues.
-                    // Yes! Our Gender enum in com.touchemanager.athlete.entity.Gender only has MALE and FEMALE.
-                    // So let's use MALE or FEMALE.
-                    "Club de Esgrima Buenos Aires",
-                    today.plusDays(4), // Closed
-                    BigDecimal.valueOf(12000.00)
-            );
+            Tournament t3 = new Tournament();
+            t3.setName("Torneo Relámpago - Sable Juvenil Femenino");
+            t3.setWeapon(Weapon.SABRE);
+            t3.setCategory(Category.JUNIOR);
+            t3.setGender(Gender.FEMALE);
+            t3.setLocation("Club de Esgrima Buenos Aires");
+            t3.setDate(today.plusDays(4));
+            t3.setBasePrice(BigDecimal.valueOf(12000.00));
 
-            Tournament t4 = new Tournament(
-                    null,
-                    "Metropolitano de Espada Veteranos Masculino",
-                    Weapon.EPEE,
-                    Category.VETERAN,
-                    Gender.MALE,
-                    "Club Comunicaciones",
-                    today.plusDays(35),
-                    BigDecimal.valueOf(15000.00)
-            );
+            Tournament t4 = new Tournament();
+            t4.setName("Metropolitano de Espada Veteranos Masculino");
+            t4.setWeapon(Weapon.EPEE);
+            t4.setCategory(Category.VETERAN);
+            t4.setGender(Gender.MALE);
+            t4.setLocation("Club Comunicaciones");
+            t4.setDate(today.plusDays(35));
+            t4.setBasePrice(BigDecimal.valueOf(15000.00));
 
             tournamentRepository.saveAll(List.of(t1, t2, t3, t4));
             System.out.println("--- Seeded sample tournaments successfully! ---");
