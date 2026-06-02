@@ -23,8 +23,11 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +54,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (!hasMedical || !hasPayment) {
             throw new IllegalArgumentException("Documentación incompleta: Debes subir tu Apto Médico y tu Comprobante de Pago en tu perfil antes de inscribirte.");
+        }
+
+        // 2. Validate gender and category eligibility
+        if (athlete.getGender() != tournament.getGender()) {
+            throw new IllegalArgumentException("Este torneo es para la categoría de género " + tournament.getGender() + " y no coincide con tu perfil.");
+        }
+        com.touchemanager.tournament.entity.Category athleteCategory = deriveCategory(athlete.getBirthDate());
+        Set<com.touchemanager.tournament.entity.Category> eligible = getEligibleCategories(athleteCategory);
+        if (!eligible.contains(tournament.getCategory())) {
+            throw new IllegalArgumentException("No cumplís los requisitos de categoría para este torneo.");
         }
 
         // 2. Check if already enrolled or has cancelled pre-enrollment
@@ -185,5 +198,45 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 enrollment.getStatus(),
                 paymentLink
         );
+    }
+
+    private com.touchemanager.tournament.entity.Category deriveCategory(LocalDate birthDate) {
+        int age = Period.between(birthDate, LocalDate.now()).getYears();
+        if (age >= 40) return com.touchemanager.tournament.entity.Category.VETERAN;
+        if (age >= 18) return com.touchemanager.tournament.entity.Category.SENIOR;
+        if (age >= 16) return com.touchemanager.tournament.entity.Category.JUNIOR;
+        if (age >= 14) return com.touchemanager.tournament.entity.Category.CADET;
+        if (age >= 12) return com.touchemanager.tournament.entity.Category.PRE_CADET;
+        if (age >= 10) return com.touchemanager.tournament.entity.Category.INFANTILE;
+        return com.touchemanager.tournament.entity.Category.PRE_INFANTILE;
+    }
+
+    private Set<com.touchemanager.tournament.entity.Category> getEligibleCategories(
+            com.touchemanager.tournament.entity.Category athleteCategory) {
+        return switch (athleteCategory) {
+            case PRE_INFANTILE -> EnumSet.of(com.touchemanager.tournament.entity.Category.PRE_INFANTILE,
+                    com.touchemanager.tournament.entity.Category.INFANTILE,
+                    com.touchemanager.tournament.entity.Category.PRE_CADET,
+                    com.touchemanager.tournament.entity.Category.CADET,
+                    com.touchemanager.tournament.entity.Category.JUNIOR,
+                    com.touchemanager.tournament.entity.Category.SENIOR);
+            case INFANTILE -> EnumSet.of(com.touchemanager.tournament.entity.Category.INFANTILE,
+                    com.touchemanager.tournament.entity.Category.PRE_CADET,
+                    com.touchemanager.tournament.entity.Category.CADET,
+                    com.touchemanager.tournament.entity.Category.JUNIOR,
+                    com.touchemanager.tournament.entity.Category.SENIOR);
+            case PRE_CADET -> EnumSet.of(com.touchemanager.tournament.entity.Category.PRE_CADET,
+                    com.touchemanager.tournament.entity.Category.CADET,
+                    com.touchemanager.tournament.entity.Category.JUNIOR,
+                    com.touchemanager.tournament.entity.Category.SENIOR);
+            case CADET -> EnumSet.of(com.touchemanager.tournament.entity.Category.CADET,
+                    com.touchemanager.tournament.entity.Category.JUNIOR,
+                    com.touchemanager.tournament.entity.Category.SENIOR);
+            case JUNIOR -> EnumSet.of(com.touchemanager.tournament.entity.Category.JUNIOR,
+                    com.touchemanager.tournament.entity.Category.SENIOR);
+            case SENIOR -> EnumSet.of(com.touchemanager.tournament.entity.Category.SENIOR);
+            case VETERAN -> EnumSet.of(com.touchemanager.tournament.entity.Category.VETERAN,
+                    com.touchemanager.tournament.entity.Category.SENIOR);
+        };
     }
 }

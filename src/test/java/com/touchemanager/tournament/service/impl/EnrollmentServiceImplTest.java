@@ -69,6 +69,8 @@ class EnrollmentServiceImplTest {
         testAthlete.setUser(testUser);
         testAthlete.setFirstName("Juan");
         testAthlete.setLastName("Perez");
+        testAthlete.setGender(Gender.MALE);
+        testAthlete.setBirthDate(LocalDate.now().minusYears(25)); // 25 years old -> SENIOR
 
         regularTournament = new Tournament();
         regularTournament.setId(100L);
@@ -84,8 +86,8 @@ class EnrollmentServiceImplTest {
         lateTournament.setId(101L);
         lateTournament.setName("Copa Tardia");
         lateTournament.setWeapon(Weapon.EPEE);
-        lateTournament.setCategory(Category.CADET);
-        lateTournament.setGender(Gender.FEMALE);
+        lateTournament.setCategory(Category.SENIOR);
+        lateTournament.setGender(Gender.MALE);
         lateTournament.setLocation("Sede Tardia");
         lateTournament.setDate(LocalDate.now().plusDays(8));
         lateTournament.setBasePrice(BigDecimal.valueOf(1000.00));
@@ -94,7 +96,7 @@ class EnrollmentServiceImplTest {
         closedTournament.setId(102L);
         closedTournament.setName("Copa Cerrada");
         closedTournament.setWeapon(Weapon.SABRE);
-        closedTournament.setCategory(Category.JUNIOR);
+        closedTournament.setCategory(Category.SENIOR);
         closedTournament.setGender(Gender.MALE);
         closedTournament.setLocation("Sede Cerrada");
         closedTournament.setDate(LocalDate.now().plusDays(4));
@@ -161,8 +163,8 @@ class EnrollmentServiceImplTest {
             customLateTournament.setId(101L);
             customLateTournament.setName("Copa Tardia");
             customLateTournament.setWeapon(Weapon.EPEE);
-            customLateTournament.setCategory(Category.CADET);
-            customLateTournament.setGender(Gender.FEMALE);
+            customLateTournament.setCategory(Category.SENIOR);
+            customLateTournament.setGender(Gender.MALE);
             customLateTournament.setLocation("Sede Tardia");
             customLateTournament.setDate(tournamentDate);
             customLateTournament.setBasePrice(BigDecimal.valueOf(1000.00));

@@ -59,6 +59,8 @@ class TournamentServiceImplTest {
         testAthlete.setUser(testUser);
         testAthlete.setFirstName("Juan");
         testAthlete.setLastName("Perez");
+        testAthlete.setGender(Gender.MALE);
+        testAthlete.setBirthDate(LocalDate.now().minusYears(25)); // 25 years old -> SENIOR
     }
 
     private Tournament makeTournament(long id, String name, Weapon weapon, Category cat,
@@ -105,8 +107,8 @@ class TournamentServiceImplTest {
         try (MockedStatic<LocalDate> mockedLocalDate = mockStatic(LocalDate.class, CALLS_REAL_METHODS)) {
             mockedLocalDate.when(LocalDate::now).thenReturn(fixedToday);
 
-            Tournament tournament = makeTournament(101L, "Copa Tardia", Weapon.EPEE, Category.CADET,
-                    Gender.FEMALE, "Sede Club", tournamentDate, BigDecimal.valueOf(1000.00));
+            Tournament tournament = makeTournament(101L, "Copa Tardia", Weapon.EPEE, Category.SENIOR,
+                    Gender.MALE, "Sede Club", tournamentDate, BigDecimal.valueOf(1000.00));
 
             when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
             when(athleteRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testAthlete));
@@ -126,7 +128,7 @@ class TournamentServiceImplTest {
 
     @Test
     void getAvailableTournaments_ClosedPricingPeriod_ReturnsClosedStatus() {
-        Tournament tournament = makeTournament(102L, "Copa Cerrada", Weapon.SABRE, Category.JUNIOR,
+        Tournament tournament = makeTournament(102L, "Copa Cerrada", Weapon.SABRE, Category.SENIOR,
                 Gender.MALE, "Sede Club 2", LocalDate.now().plusDays(4), BigDecimal.valueOf(1000.00));
 
         when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
