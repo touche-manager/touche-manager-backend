@@ -18,7 +18,11 @@ import com.touchemanager.bout.repository.BoutRepository;
 import com.touchemanager.bout.service.BoutService;
 import com.touchemanager.shared.exception.BoutNotFoundException;
 import com.touchemanager.shared.exception.TournamentNotFoundException;
+import com.touchemanager.tournament.dto.OrganizerTournamentResponse;
+import com.touchemanager.tournament.entity.Enrollment;
+import com.touchemanager.tournament.entity.EnrollmentStatus;
 import com.touchemanager.tournament.entity.Tournament;
+import com.touchemanager.tournament.repository.EnrollmentRepository;
 import com.touchemanager.tournament.repository.TournamentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,7 +43,25 @@ public class BoutServiceImpl implements BoutService {
     private final BoutRepository boutRepository;
     private final BoutEventRepository boutEventRepository;
     private final TournamentRepository tournamentRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final AthleteRepository athleteRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrganizerTournamentResponse> getAllTournaments() {
+        return tournamentRepository.findAllByOrderByDateAsc().stream()
+                .map(t -> {
+                    List<Enrollment> enrollments = enrollmentRepository.findByTournamentId(t.getId());
+                    long paid    = enrollments.stream().filter(e -> e.getStatus() == EnrollmentStatus.PAID).count();
+                    long pending = enrollments.stream().filter(e -> e.getStatus() == EnrollmentStatus.PENDING_PAYMENT).count();
+                    long cancelled = enrollments.stream().filter(e -> e.getStatus() == EnrollmentStatus.CANCELLED).count();
+                    return new OrganizerTournamentResponse(
+                            t.getId(), t.getName(), t.getWeapon(), t.getCategory(), t.getGender(),
+                            t.getLocation(), t.getDate(), t.getBasePrice(),
+                            enrollments.size(), paid, pending, cancelled);
+                })
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional

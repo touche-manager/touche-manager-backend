@@ -7,6 +7,7 @@ import com.touchemanager.bout.dto.ElapsedTimeRequest;
 import com.touchemanager.bout.dto.TournamentStandingsResponse;
 import com.touchemanager.bout.service.BoutService;
 import com.touchemanager.shared.response.ApiResponse;
+import com.touchemanager.tournament.dto.OrganizerTournamentResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,6 +26,14 @@ import java.util.List;
 public class BoutController {
 
     private final BoutService boutService;
+
+    @GetMapping("/tournaments")
+    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN', 'ORGANIZER')")
+    @Operation(summary = "List all tournaments (referee view, no ownership check)")
+    public ApiResponse<List<OrganizerTournamentResponse>> getAllTournaments() {
+        return new ApiResponse<>(true, "Tournaments retrieved successfully",
+                boutService.getAllTournaments());
+    }
 
     @GetMapping("/tournament/{tournamentId}")
     @Operation(summary = "Get all bouts for a tournament")
