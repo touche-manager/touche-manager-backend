@@ -91,6 +91,12 @@ public class TournamentServiceImpl implements TournamentService {
         String enrollmentStatusLabel = alreadyEnrolled ? enrollmentOpt.get().getStatus().name() : null;
         Long enrollmentId = alreadyEnrolled ? enrollmentOpt.get().getId() : null;
 
+        // Detect cancelled enrollments that were previously paid (eligible for free re-enrollment)
+        boolean wasPreviouslyPaid = enrollmentOpt
+                .filter(e -> e.getStatus() == EnrollmentStatus.CANCELLED)
+                .map(e -> e.getPaymentId() != null)
+                .orElse(false);
+
         return new TournamentResponse(
                 tournament.getId(),
                 tournament.getName(),
@@ -106,7 +112,8 @@ public class TournamentServiceImpl implements TournamentService {
                 enrollmentStatus,
                 alreadyEnrolled,
                 enrollmentStatusLabel,
-                enrollmentId
+                enrollmentId,
+                wasPreviouslyPaid
         );
     }
 }

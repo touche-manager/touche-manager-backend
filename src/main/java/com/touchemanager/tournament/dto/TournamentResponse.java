@@ -22,5 +22,6 @@ public record TournamentResponse(
         String enrollmentStatus,
         boolean alreadyEnrolled,
         String enrollmentStatusLabel,
-        Long enrollmentId
+        Long enrollmentId,
+        boolean wasPreviouslyPaid
 ) {}
