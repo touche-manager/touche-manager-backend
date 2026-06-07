@@ -39,4 +39,6 @@ public class TournamentRequest {
     @NotNull(message = "Base price is required")
     @DecimalMin(value = "0.0", message = "Base price must be non-negative")
     private BigDecimal basePrice;
+
+    private BigDecimal advancementRate = BigDecimal.ONE;
 }

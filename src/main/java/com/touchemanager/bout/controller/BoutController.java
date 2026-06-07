@@ -5,8 +5,10 @@ import com.touchemanager.bout.dto.BoutRequest;
 import com.touchemanager.bout.dto.BoutResponse;
 import com.touchemanager.bout.dto.ElapsedTimeRequest;
 import com.touchemanager.bout.dto.TournamentStandingsResponse;
+import com.touchemanager.bout.entity.EventSide;
 import com.touchemanager.bout.service.BoutService;
 import com.touchemanager.shared.response.ApiResponse;
+import com.touchemanager.tournament.dto.AssignRefereeRequest;
 import com.touchemanager.tournament.dto.OrganizerTournamentResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bouts")
@@ -108,5 +111,68 @@ public class BoutController {
             @PathVariable Long boutId) {
         return new ApiResponse<>(true, "Bout finished successfully",
                 boutService.finishBout(email, boutId));
+    }
+
+    @PostMapping("/{boutId}/priority")
+    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @Operation(summary = "Assign priority to one side (LEFT/RIGHT) for tie-breaking")
+    public ApiResponse<BoutResponse> assignPriority(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long boutId,
+            @RequestBody Map<String, String> body) {
+        EventSide side = EventSide.valueOf(body.get("side"));
+        return new ApiResponse<>(true, "Prioridad asignada correctamente",
+                boutService.assignPriority(email, boutId, side));
+    }
+
+    @PostMapping("/{boutId}/referees")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @Operation(summary = "Assign a referee to an elimination bout")
+    public ApiResponse<BoutResponse> assignRefereeToEliminationBout(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long boutId,
+            @Valid @RequestBody AssignRefereeRequest request) {
+        return new ApiResponse<>(true, "Arbitro asignado al asalto correctamente",
+                boutService.assignRefereeToEliminationBout(email, boutId, request));
+    }
+
+    @DeleteMapping("/{boutId}/referees/{refereeId}")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @Operation(summary = "Remove a referee from an elimination bout")
+    public ApiResponse<BoutResponse> removeRefereeFromEliminationBout(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long boutId,
+            @PathVariable Long refereeId) {
+        return new ApiResponse<>(true, "Arbitro removido del asalto correctamente",
+                boutService.removeRefereeFromEliminationBout(email, boutId, refereeId));
+    }
+
+    @GetMapping("/tournament/{tournamentId}/my-bouts")
+    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @Operation(summary = "Get bouts assigned to the authenticated referee in a tournament")
+    public ApiResponse<List<BoutResponse>> getMyBouts(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long tournamentId) {
+        return new ApiResponse<>(true, "Tus asaltos obtenidos correctamente",
+                boutService.getMyAssignedBouts(email, tournamentId));
+    }
+
+    @GetMapping("/elimination/{tournamentId}")
+    @PreAuthorize("hasAnyRole('REFEREE', 'ORGANIZER', 'ADMIN')")
+    @Operation(summary = "Get all elimination bouts for a tournament")
+    public ApiResponse<List<BoutResponse>> getEliminationBouts(
+            @PathVariable Long tournamentId) {
+        return new ApiResponse<>(true, "Asaltos de eliminatoria obtenidos",
+                boutService.getEliminationBouts(tournamentId));
+    }
+
+    @GetMapping("/my-elimination/{tournamentId}")
+    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @Operation(summary = "Get elimination bouts assigned to the authenticated referee")
+    public ApiResponse<List<BoutResponse>> getMyEliminationBouts(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long tournamentId) {
+        return new ApiResponse<>(true, "Tus asaltos de eliminatoria obtenidos",
+                boutService.getMyEliminationBouts(email, tournamentId));
     }
 }

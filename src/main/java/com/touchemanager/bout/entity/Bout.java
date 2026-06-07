@@ -1,6 +1,8 @@
 package com.touchemanager.bout.entity;
 
 import com.touchemanager.athlete.entity.Athlete;
+import com.touchemanager.auth.entity.User;
+import com.touchemanager.tournament.entity.Poule;
 import com.touchemanager.tournament.entity.Tournament;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -26,12 +28,18 @@ public class Bout {
     @JoinColumn(name = "tournament_id", nullable = false)
     private Tournament tournament;
 
+    /** Null for elimination bouts */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "poule_id")
+    private Poule poule;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "athlete_left_id", nullable = false)
     private Athlete athleteLeft;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "athlete_right_id", nullable = false)
+    /** Null when right side is a BYE in elimination bracket */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "athlete_right_id")
     private Athlete athleteRight;
 
     @Enumerated(EnumType.STRING)
@@ -51,7 +59,6 @@ public class Bout {
     @Column(name = "current_period", nullable = false)
     private int currentPeriod = 1;
 
-    // Total seconds elapsed across all periods
     @Column(name = "elapsed_seconds", nullable = false)
     private int elapsedSeconds = 0;
 
@@ -65,8 +72,33 @@ public class Bout {
     @JoinColumn(name = "winner_id")
     private Athlete winner;
 
-    @Column(name = "referee_email", length = 255)
-    private String refereeEmail;
+    /** Used for ordering bouts within a poule */
+    @Column(name = "bout_order")
+    private Integer boutOrder;
+
+    /** Non-null for elimination bouts */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "elimination_round", length = 20)
+    private EliminationRound eliminationRound;
+
+    /** Seed position in the elimination bracket (1-based) */
+    @Column(name = "bracket_position")
+    private Integer bracketPosition;
+
+    /** Priority assigned when scores are tied at end of regulation time.
+     *  The fencer with priority wins if no touch is scored in the extra minute. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority", length = 10)
+    private EventSide priority;
+
+    /** Referees assigned to this bout */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "bout_referees",
+            joinColumns = @JoinColumn(name = "bout_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> referees = new ArrayList<>();
 
     @OneToMany(mappedBy = "bout", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoutEvent> events = new ArrayList<>();

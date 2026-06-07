@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-@Component
+// @Component  // Disabled — use the SQL seed script instead
 @RequiredArgsConstructor
 public class TournamentDataInitializer implements CommandLineRunner {
 

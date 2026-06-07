@@ -48,4 +48,11 @@ public class Tournament {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")
     private User createdBy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "phase", nullable = false, length = 30)
+    private TournamentPhase phase = TournamentPhase.ENROLLMENT;
+
+    @Column(name = "advancement_rate", nullable = false, precision = 3, scale = 2)
+    private java.math.BigDecimal advancementRate = java.math.BigDecimal.ONE;
 }

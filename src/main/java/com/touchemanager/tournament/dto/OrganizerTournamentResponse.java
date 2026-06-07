@@ -2,6 +2,7 @@ package com.touchemanager.tournament.dto;
 
 import com.touchemanager.athlete.entity.Gender;
 import com.touchemanager.tournament.entity.Category;
+import com.touchemanager.tournament.entity.TournamentPhase;
 import com.touchemanager.tournament.entity.Weapon;
 
 import java.math.BigDecimal;
@@ -16,6 +17,8 @@ public record OrganizerTournamentResponse(
         String location,
         LocalDate date,
         BigDecimal basePrice,
+        TournamentPhase phase,
+        BigDecimal advancementRate,
         long totalEnrollments,
         long paidEnrollments,
         long pendingEnrollments,

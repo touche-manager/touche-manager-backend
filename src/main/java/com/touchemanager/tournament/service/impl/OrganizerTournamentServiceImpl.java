@@ -167,6 +167,8 @@ public class OrganizerTournamentServiceImpl implements OrganizerTournamentServic
                 tournament.getLocation(),
                 tournament.getDate(),
                 tournament.getBasePrice(),
+                tournament.getPhase(),
+                tournament.getAdvancementRate(),
                 total,
                 paid,
                 pending,
