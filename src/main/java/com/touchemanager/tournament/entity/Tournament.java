@@ -1,11 +1,11 @@
 package com.touchemanager.tournament.entity;
 
 import com.touchemanager.athlete.entity.Gender;
+import com.touchemanager.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,7 +15,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Tournament {
 
     @Id
@@ -45,4 +44,15 @@ public class Tournament {
 
     @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal basePrice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id")
+    private User createdBy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "phase", nullable = false, length = 30)
+    private TournamentPhase phase = TournamentPhase.ENROLLMENT;
+
+    @Column(name = "advancement_rate", nullable = false, precision = 3, scale = 2)
+    private java.math.BigDecimal advancementRate = java.math.BigDecimal.ONE;
 }

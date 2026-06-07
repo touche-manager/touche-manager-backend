@@ -36,4 +36,11 @@ public class AthleteDocument {
 
     @Column(name = "upload_date", nullable = false)
     private LocalDateTime uploadDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "validation_status", nullable = false, length = 20)
+    private DocumentValidationStatus validationStatus = DocumentValidationStatus.PENDING;
+
+    @Column(name = "review_notes", length = 500)
+    private String reviewNotes;
 }

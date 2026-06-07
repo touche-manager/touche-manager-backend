@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface TournamentRepository extends JpaRepository<Tournament, Long> {
     List<Tournament> findAllByOrderByDateAsc();
+    List<Tournament> findByCreatedByIdOrderByDateAsc(Long createdByUserId);
 }
+
