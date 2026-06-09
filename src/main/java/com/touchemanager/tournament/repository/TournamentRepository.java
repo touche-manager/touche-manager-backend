@@ -30,5 +30,16 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
             @Param("weapon") Weapon weapon,
             @Param("dateFrom") LocalDate dateFrom,
             @Param("dateTo") LocalDate dateTo);
+
+    @Query("SELECT t FROM Tournament t WHERE t.phase = 'FINISHED' " +
+           "AND t.category = :category " +
+           "AND t.gender = :gender " +
+           "AND t.weapon = :weapon " +
+           "ORDER BY t.date DESC " +
+           "LIMIT 4")
+    List<Tournament> findTop4ByDisciplineOrderByDateDesc(
+            @Param("category") Category category,
+            @Param("gender") Gender gender,
+            @Param("weapon") Weapon weapon);
 }
 

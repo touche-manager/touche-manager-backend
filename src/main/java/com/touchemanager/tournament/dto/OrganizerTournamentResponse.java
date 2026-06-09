@@ -19,6 +19,7 @@ public record OrganizerTournamentResponse(
         BigDecimal basePrice,
         TournamentPhase phase,
         BigDecimal advancementRate,
+        boolean isNational,
         long totalEnrollments,
         long paidEnrollments,
         long pendingEnrollments,

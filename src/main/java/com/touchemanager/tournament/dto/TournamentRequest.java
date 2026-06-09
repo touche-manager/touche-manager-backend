@@ -41,4 +41,7 @@ public class TournamentRequest {
     private BigDecimal basePrice;
 
     private BigDecimal advancementRate = BigDecimal.ONE;
+
+    /** If true, this tournament is a National Championship (coefficient 1.2 in rankings) */
+    private boolean isNational = false;
 }

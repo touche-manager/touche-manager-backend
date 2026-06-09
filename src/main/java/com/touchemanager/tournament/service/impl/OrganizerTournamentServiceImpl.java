@@ -48,6 +48,7 @@ public class OrganizerTournamentServiceImpl implements OrganizerTournamentServic
         tournament.setDate(request.getDate());
         tournament.setBasePrice(request.getBasePrice());
         tournament.setCreatedBy(organizer);
+        tournament.setNational(request.isNational());
 
         Tournament saved = tournamentRepository.save(tournament);
         return toResponse(saved, List.of());
@@ -66,6 +67,7 @@ public class OrganizerTournamentServiceImpl implements OrganizerTournamentServic
         tournament.setLocation(request.getLocation());
         tournament.setDate(request.getDate());
         tournament.setBasePrice(request.getBasePrice());
+        tournament.setNational(request.isNational());
 
         Tournament saved = tournamentRepository.save(tournament);
         List<Enrollment> enrollments = enrollmentRepository.findByTournamentId(saved.getId());
@@ -169,6 +171,7 @@ public class OrganizerTournamentServiceImpl implements OrganizerTournamentServic
                 tournament.getBasePrice(),
                 tournament.getPhase(),
                 tournament.getAdvancementRate(),
+                tournament.isNational(),
                 total,
                 paid,
                 pending,

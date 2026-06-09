@@ -537,12 +537,35 @@ public class PouleServiceImpl implements PouleService {
                     s.touchesScored - s.touchesReceived));
         }
 
+        // ── Participants list (ordered by poule standings = series number) ────
+        List<TournamentResultResponse.Participant> participants = new ArrayList<>();
+        for (int i = 0; i < pouleStandings.size(); i++) {
+            PouleStandingEntry s = pouleStandings.get(i);
+            StandingData sd = statsMap.get(s.athleteId());
+            if (sd != null) {
+                participants.add(new TournamentResultResponse.Participant(
+                        i + 1,
+                        s.athleteId(),
+                        sd.athlete.getFirstName() + " " + sd.athlete.getLastName(),
+                        sd.athlete.getClub()
+                ));
+            }
+        }
+
+        // ── Poule sheets (cross-table) ────────────────────────────────────────
+        List<TournamentResultResponse.PouleSheet> pouleSheets = buildPouleSheets(tournamentId, poules);
+
+        // ── Elimination bracket ───────────────────────────────────────────────
+        TournamentResultResponse.BracketData bracket = buildBracket(elimBouts);
+
         return new TournamentResultResponse(
                 tournament.getId(), tournament.getName(),
                 tournament.getWeapon().name(), tournament.getCategory().name(),
                 tournament.getGender().name(), tournament.getLocation(),
                 tournament.getDate().toString(), tournament.getPhase().name(),
-                podium, standings);
+                tournament.isNational(),
+                participants, podium, standings,
+                pouleSheets, bracket);
     }
 
     private int getTierForRound(EliminationRound round) {
@@ -555,6 +578,169 @@ public class PouleServiceImpl implements PouleService {
             case ROUND_OF_32 -> 6;
             case ROUND_OF_64 -> 7;
         };
+    }
+
+    // ── Poule sheet builder ───────────────────────────────────────────────────
+
+    private List<TournamentResultResponse.PouleSheet> buildPouleSheets(
+            Long tournamentId, List<Poule> poules) {
+
+        List<TournamentResultResponse.PouleSheet> sheets = new ArrayList<>();
+
+        for (Poule poule : poules) {
+            List<Athlete> athletes = poule.getAthletes();
+            int size = athletes.size();
+            // index map: athleteId → 1-based position in this poule
+            Map<Long, Integer> indexMap = new LinkedHashMap<>();
+            for (int i = 0; i < size; i++) {
+                indexMap.put(athletes.get(i).getId(), i + 1);
+            }
+
+            // Fetch bouts for this poule (ordered for stable display)
+            List<Bout> bouts = boutRepository.findByPouleIdOrderByBoutOrderAsc(poule.getId());
+
+            // Build cell map: key = "rowIdx-colIdx", value = "V5" / "D3"
+            Map<String, String> cellMap = new HashMap<>();
+            Map<Long, Integer> victories = new HashMap<>();
+            Map<Long, Integer> touchesScored = new HashMap<>();
+            Map<Long, Integer> touchesReceived = new HashMap<>();
+
+            for (Athlete a : athletes) {
+                victories.put(a.getId(), 0);
+                touchesScored.put(a.getId(), 0);
+                touchesReceived.put(a.getId(), 0);
+            }
+
+            for (Bout b : bouts) {
+                if (b.getStatus() != BoutStatus.FINISHED) continue;
+                if (b.getAthleteRight() == null) continue;
+
+                int leftIdx  = indexMap.getOrDefault(b.getAthleteLeft().getId(), 0);
+                int rightIdx = indexMap.getOrDefault(b.getAthleteRight().getId(), 0);
+                if (leftIdx == 0 || rightIdx == 0) continue;
+
+                boolean leftWon = b.getWinner() != null &&
+                        b.getWinner().getId().equals(b.getAthleteLeft().getId());
+
+                // Left row, right column
+                cellMap.put(leftIdx + "-" + rightIdx,
+                        leftWon ? "V" + b.getScoreLeft() : "D" + b.getScoreLeft());
+                // Right row, left column
+                cellMap.put(rightIdx + "-" + leftIdx,
+                        leftWon ? "D" + b.getScoreRight() : "V" + b.getScoreRight());
+
+                // Accumulate stats
+                touchesScored.merge(b.getAthleteLeft().getId(), b.getScoreLeft(), Integer::sum);
+                touchesReceived.merge(b.getAthleteLeft().getId(), b.getScoreRight(), Integer::sum);
+                touchesScored.merge(b.getAthleteRight().getId(), b.getScoreRight(), Integer::sum);
+                touchesReceived.merge(b.getAthleteRight().getId(), b.getScoreLeft(), Integer::sum);
+                if (leftWon) {
+                    victories.merge(b.getAthleteLeft().getId(), 1, Integer::sum);
+                } else if (b.getWinner() != null) {
+                    victories.merge(b.getAthleteRight().getId(), 1, Integer::sum);
+                }
+            }
+
+            // Sort athletes by victories desc, indicator desc for rank
+            List<Athlete> ranked = new ArrayList<>(athletes);
+            ranked.sort((a, b) -> {
+                int v = Integer.compare(
+                        victories.getOrDefault(b.getId(), 0),
+                        victories.getOrDefault(a.getId(), 0));
+                if (v != 0) return v;
+                int indA = touchesScored.getOrDefault(a.getId(), 0) - touchesReceived.getOrDefault(a.getId(), 0);
+                int indB = touchesScored.getOrDefault(b.getId(), 0) - touchesReceived.getOrDefault(b.getId(), 0);
+                return Integer.compare(indB, indA);
+            });
+            Map<Long, Integer> rankMap = new LinkedHashMap<>();
+            for (int i = 0; i < ranked.size(); i++) rankMap.put(ranked.get(i).getId(), i + 1);
+
+            // Build rows
+            List<TournamentResultResponse.PouleSheet.PouleRow> rows = new ArrayList<>();
+            for (Athlete a : athletes) {
+                int idx = indexMap.get(a.getId());
+                Map<Integer, String> cells = new LinkedHashMap<>();
+                for (Athlete opp : athletes) {
+                    int oppIdx = indexMap.get(opp.getId());
+                    if (oppIdx == idx) continue; // diagonal
+                    String cell = cellMap.getOrDefault(idx + "-" + oppIdx, "");
+                    cells.put(oppIdx, cell);
+                }
+                int ts = touchesScored.getOrDefault(a.getId(), 0);
+                int tr = touchesReceived.getOrDefault(a.getId(), 0);
+                rows.add(new TournamentResultResponse.PouleSheet.PouleRow(
+                        idx,
+                        a.getId(),
+                        a.getFirstName() + " " + a.getLastName(),
+                        a.getClub(),
+                        cells,
+                        victories.getOrDefault(a.getId(), 0),
+                        ts, tr, ts - tr,
+                        rankMap.getOrDefault(a.getId(), 0)
+                ));
+            }
+            sheets.add(new TournamentResultResponse.PouleSheet(poule.getNumber(), rows));
+        }
+        return sheets;
+    }
+
+    // ── Bracket builder ───────────────────────────────────────────────────────
+
+    private TournamentResultResponse.BracketData buildBracket(List<Bout> elimBouts) {
+        // Round display order (earliest first)
+        List<EliminationRound> roundOrder = List.of(
+                EliminationRound.ROUND_OF_64,
+                EliminationRound.ROUND_OF_32,
+                EliminationRound.ROUND_OF_16,
+                EliminationRound.QUARTERFINAL,
+                EliminationRound.SEMIFINAL,
+                EliminationRound.FINAL
+        );
+        Map<String, String> roundLabels = Map.of(
+                "ROUND_OF_64",  "64avos",
+                "ROUND_OF_32",  "32avos",
+                "ROUND_OF_16",  "16avos",
+                "QUARTERFINAL", "Cuartos de Final",
+                "SEMIFINAL",    "Semifinal",
+                "FINAL",        "Final"
+        );
+
+        // Group bouts by round
+        Map<EliminationRound, List<Bout>> byRound = new LinkedHashMap<>();
+        for (EliminationRound r : roundOrder) {
+            List<Bout> roundBouts = elimBouts.stream()
+                    .filter(b -> r == b.getEliminationRound())
+                    .sorted(Comparator.comparingInt(b -> b.getBracketPosition() != null ? b.getBracketPosition() : 0))
+                    .toList();
+            if (!roundBouts.isEmpty()) byRound.put(r, roundBouts);
+        }
+
+        List<TournamentResultResponse.BracketData.BracketRound> rounds = new ArrayList<>();
+        for (Map.Entry<EliminationRound, List<Bout>> entry : byRound.entrySet()) {
+            String roundKey = entry.getKey().name();
+            List<TournamentResultResponse.BracketData.BracketBout> boutDtos = entry.getValue().stream()
+                    .map(b -> new TournamentResultResponse.BracketData.BracketBout(
+                            b.getId(),
+                            b.getBracketPosition() != null ? b.getBracketPosition() : 0,
+                            b.getAthleteLeft().getFirstName() + " " + b.getAthleteLeft().getLastName(),
+                            b.getAthleteRight() != null
+                                    ? b.getAthleteRight().getFirstName() + " " + b.getAthleteRight().getLastName()
+                                    : "BYE",
+                            b.getScoreLeft(),
+                            b.getScoreRight(),
+                            b.getWinner() != null
+                                    ? b.getWinner().getFirstName() + " " + b.getWinner().getLastName()
+                                    : null,
+                            b.getStatus() == BoutStatus.FINISHED
+                    ))
+                    .toList();
+            rounds.add(new TournamentResultResponse.BracketData.BracketRound(
+                    roundKey,
+                    roundLabels.getOrDefault(roundKey, roundKey),
+                    boutDtos
+            ));
+        }
+        return new TournamentResultResponse.BracketData(rounds);
     }
 
     /** Helper class for standings accumulation in getTournamentResults */

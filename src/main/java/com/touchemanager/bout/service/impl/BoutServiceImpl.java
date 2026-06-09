@@ -75,6 +75,7 @@ public class BoutServiceImpl implements BoutService {
                             t.getId(), t.getName(), t.getWeapon(), t.getCategory(), t.getGender(),
                             t.getLocation(), t.getDate(), t.getBasePrice(),
                             t.getPhase(), t.getAdvancementRate(),
+                            t.isNational(),
                             enrollments.size(), paid, pending, cancelled);
                 })
                 .collect(Collectors.toList());

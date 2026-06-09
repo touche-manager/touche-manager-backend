@@ -55,4 +55,8 @@ public class Tournament {
 
     @Column(name = "advancement_rate", nullable = false, precision = 3, scale = 2)
     private java.math.BigDecimal advancementRate = java.math.BigDecimal.ONE;
+
+    /** Marks this tournament as a National Championship — applies coefficient 1.2 in rankings */
+    @Column(name = "is_national", nullable = false)
+    private boolean isNational = false;
 }
