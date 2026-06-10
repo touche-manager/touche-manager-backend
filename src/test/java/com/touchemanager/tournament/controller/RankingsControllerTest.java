@@ -3,10 +3,7 @@ package com.touchemanager.tournament.controller;
 import com.touchemanager.auth.service.JwtService;
 import com.touchemanager.auth.service.impl.UserDetailsServiceImpl;
 import com.touchemanager.shared.security.JwtAuthenticationFilter;
-import com.touchemanager.tournament.dto.TournamentResultResponse;
-import com.touchemanager.tournament.entity.Category;
-import com.touchemanager.tournament.entity.Weapon;
-import com.touchemanager.athlete.entity.Gender;
+import com.touchemanager.tournament.repository.TournamentSpecification;
 import com.touchemanager.tournament.repository.TournamentRepository;
 import com.touchemanager.tournament.service.PouleService;
 import com.touchemanager.tournament.service.RankingService;
@@ -15,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -46,7 +45,7 @@ class RankingsControllerTest {
 
     @Test
     void getResults_noFilters_returnsOk() throws Exception {
-        when(tournamentRepository.findFinishedTournaments(null, null, null, null, null))
+        when(tournamentRepository.findAll(any(Specification.class), any(Sort.class)))
                 .thenReturn(List.of());
 
         mockMvc.perform(get("/api/results"))
@@ -57,8 +56,7 @@ class RankingsControllerTest {
 
     @Test
     void getResults_withValidFilters_returnsOk() throws Exception {
-        when(tournamentRepository.findFinishedTournaments(
-                any(), any(), any(), any(), any()))
+        when(tournamentRepository.findAll(any(Specification.class), any(Sort.class)))
                 .thenReturn(List.of());
 
         mockMvc.perform(get("/api/results")
@@ -120,8 +118,7 @@ class RankingsControllerTest {
 
     @Test
     void getRankingsAlias_withValidFilters_returnsOk() throws Exception {
-        when(tournamentRepository.findFinishedTournaments(
-                any(), any(), any(), any(), any()))
+        when(tournamentRepository.findAll(any(Specification.class), any(Sort.class)))
                 .thenReturn(List.of());
 
         mockMvc.perform(get("/api/rankings")

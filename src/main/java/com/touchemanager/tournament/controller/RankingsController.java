@@ -8,11 +8,13 @@ import com.touchemanager.tournament.entity.Category;
 import com.touchemanager.tournament.entity.Tournament;
 import com.touchemanager.tournament.entity.Weapon;
 import com.touchemanager.tournament.repository.TournamentRepository;
+import com.touchemanager.tournament.repository.TournamentSpecification;
 import com.touchemanager.tournament.service.PouleService;
 import com.touchemanager.tournament.service.RankingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,8 +42,9 @@ public class RankingsController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
 
-        List<Tournament> tournaments = tournamentRepository.findFinishedTournaments(
-                category, gender, weapon, dateFrom, dateTo);
+        List<Tournament> tournaments = tournamentRepository.findAll(
+                TournamentSpecification.finishedWithFilters(category, gender, weapon, dateFrom, dateTo),
+                Sort.by(Sort.Direction.DESC, "date"));
 
         List<TournamentResultResponse> results = tournaments.stream()
                 .map(t -> pouleService.getTournamentResults(t.getId()))
