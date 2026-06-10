@@ -521,20 +521,16 @@ public class PouleServiceImpl implements PouleService {
             return Integer.compare(pRankA, pRankB);
         });
 
+        // ── FinalStanding: final position only (no stats) ────────────────────
         List<TournamentResultResponse.FinalStanding> standings = new ArrayList<>();
         for (int i = 0; i < sorted.size(); i++) {
             StandingData s = sorted.get(i);
             int tier = athleteTiers.getOrDefault(s.athlete.getId(), 8);
-
             int rank = (tier == 3) ? 3 : (i + 1);
-
             standings.add(new TournamentResultResponse.FinalStanding(
                     rank, s.athlete.getId(),
                     s.athlete.getFirstName() + " " + s.athlete.getLastName(),
-                    s.athlete.getClub(),
-                    s.bouts, s.victories, s.defeats,
-                    s.touchesScored, s.touchesReceived,
-                    s.touchesScored - s.touchesReceived));
+                    s.athlete.getClub()));
         }
 
         // ── Participants list (ordered by poule standings = series number) ────
@@ -552,6 +548,22 @@ public class PouleServiceImpl implements PouleService {
             }
         }
 
+        // ── Poule classification (stats from poule bouts only, ordered by poule rank) ──
+        List<TournamentResultResponse.PouleClassificationEntry> pouleClassification = new ArrayList<>();
+        for (int i = 0; i < pouleStandings.size(); i++) {
+            PouleStandingEntry s = pouleStandings.get(i);
+            pouleClassification.add(new TournamentResultResponse.PouleClassificationEntry(
+                    i + 1,
+                    s.athleteId(),
+                    s.fullName(),
+                    s.club(),
+                    s.victories(),
+                    s.touchesScored(),
+                    s.touchesReceived(),
+                    s.touchesScored() - s.touchesReceived()
+            ));
+        }
+
         // ── Poule sheets (cross-table) ────────────────────────────────────────
         List<TournamentResultResponse.PouleSheet> pouleSheets = buildPouleSheets(tournamentId, poules);
 
@@ -564,7 +576,7 @@ public class PouleServiceImpl implements PouleService {
                 tournament.getGender().name(), tournament.getLocation(),
                 tournament.getDate().toString(), tournament.getPhase().name(),
                 tournament.isNational(),
-                participants, podium, standings,
+                participants, podium, standings, pouleClassification,
                 pouleSheets, bracket);
     }
 

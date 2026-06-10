@@ -21,6 +21,7 @@ public record TournamentResultResponse(
         List<Participant> participants,
         List<PodiumEntry> podium,
         List<FinalStanding> standings,
+        List<PouleClassificationEntry> pouleClassification,
         List<PouleSheet> pouleSheets,
         BracketData bracket
 ) {
@@ -41,15 +42,27 @@ public record TournamentResultResponse(
             String club
     ) {}
 
-    /** Full standings row for the final results table */
+    /**
+     * Final tournament standing — position only, no combat stats.
+     * Stats belong to the poule phase (see PouleClassificationEntry).
+     */
     public record FinalStanding(
             int rank,
             Long athleteId,
             String fullName,
+            String club
+    ) {}
+
+    /**
+     * Poule-phase classification row — stats from poule bouts only.
+     * Ordered by poule rank (victories desc, indicator desc, TA desc).
+     */
+    public record PouleClassificationEntry(
+            int rank,
+            Long athleteId,
+            String fullName,
             String club,
-            int bouts,
             int victories,
-            int defeats,
             int touchesScored,
             int touchesReceived,
             int indicator
