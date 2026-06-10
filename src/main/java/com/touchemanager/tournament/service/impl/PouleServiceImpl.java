@@ -290,10 +290,13 @@ public class PouleServiceImpl implements PouleService {
 
         return statsMap.values().stream()
                 .map(PouleStandingData::toEntry)
-                .sorted(Comparator
-                        .comparingInt(PouleStandingEntry::victories).reversed()
-                        .thenComparingInt(PouleStandingEntry::indicator).reversed()
-                        .thenComparingInt(PouleStandingEntry::touchesScored).reversed())
+                .sorted(
+                    // victories DESC → indicator DESC → touchesScored DESC
+                    // Each criterion reversed independently to avoid the Java Comparator
+                    // pitfall where chained .reversed() inverts the whole comparator.
+                    Comparator.<PouleStandingEntry>comparingInt(PouleStandingEntry::victories).reversed()
+                        .thenComparing(Comparator.comparingInt(PouleStandingEntry::indicator).reversed())
+                        .thenComparing(Comparator.comparingInt(PouleStandingEntry::touchesScored).reversed()))
                 .collect(Collectors.toList());
     }
 
