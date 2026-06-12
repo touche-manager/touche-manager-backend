@@ -26,6 +26,11 @@ public interface BoutRepository extends JpaRepository<Bout, Long> {
 
     List<Bout> findByPouleIdOrderByBoutOrderAsc(Long pouleId);
 
+    @Query("SELECT b FROM Bout b WHERE " +
+           "(b.athleteLeft.id = :athleteId OR b.athleteRight.id = :athleteId) " +
+           "ORDER BY b.id DESC")
+    List<Bout> findByAthleteId(@Param("athleteId") Long athleteId);
+
     List<Bout> findByTournamentIdAndPouleIsNullOrderByEliminationRoundAscBracketPositionAsc(Long tournamentId);
 
     List<Bout> findByTournamentIdAndPouleIsNullAndRefereesId(Long tournamentId, Long refereeId);

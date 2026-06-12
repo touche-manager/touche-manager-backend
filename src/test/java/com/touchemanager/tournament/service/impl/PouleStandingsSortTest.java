@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,18 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * where thenComparingInt(x).reversed() would invert the entire chain instead of
  * only the last comparator, causing incorrect rankings for tied athletes.
  *
- * Correct ordering: victories DESC → indicator DESC → touchesScored DESC
+ * Correct ordering (FIE): victories DESC → indicator DESC → touchesScored DESC
+ * → head-to-head (direct confrontation) on a perfect tie.
  */
 class PouleStandingsSortTest {
 
-    /**
-     * The corrected comparator extracted from PouleServiceImpl#computePouleStandings.
-     * This is tested in isolation so any future regression is immediately visible.
-     */
+    /** The real comparator from PouleServiceImpl, with no head-to-head data */
     private static final Comparator<PouleStandingEntry> STANDINGS_COMPARATOR =
-            Comparator.<PouleStandingEntry>comparingInt(PouleStandingEntry::victories).reversed()
-                    .thenComparing(Comparator.comparingInt(PouleStandingEntry::indicator).reversed())
-                    .thenComparing(Comparator.comparingInt(PouleStandingEntry::touchesScored).reversed());
+            PouleServiceImpl.pouleStandingsComparator(Map.of());
 
     // ── Helper ──────────────────────────────────────────────────────────────────
 
@@ -131,5 +128,61 @@ class PouleStandingsSortTest {
         // Positions 7/8 corrected: Sánchez before López
         assertThat(result.get(6).fullName()).isEqualTo("Agustín Sánchez");
         assertThat(result.get(7).fullName()).isEqualTo("Nicolás López");
+    }
+
+    // ── Head-to-head (direct confrontation) tie-break ───────────────────────────
+
+    @Test
+    @DisplayName("Perfect tie (V, Ind, TA): head-to-head winner ranks first")
+    void perfectTie_headToHeadWinnerRanksFirst() {
+        // Both: 2V, TA=12, TR=10 → identical on every numeric criterion
+        var a = entry(1, "Won the duel",  2, 12, 10);
+        var b = entry(2, "Lost the duel", 2, 12, 10);
+
+        // Athlete 1 beat athlete 2 in their direct bout
+        Map<Long, Map<Long, Long>> headToHead = Map.of(
+                1L, Map.of(2L, 1L),
+                2L, Map.of(1L, 1L)
+        );
+
+        var result = Arrays.stream(new PouleStandingEntry[]{b, a})
+                .sorted(PouleServiceImpl.pouleStandingsComparator(headToHead))
+                .toList();
+
+        assertThat(result.get(0).fullName()).isEqualTo("Won the duel");
+        assertThat(result.get(1).fullName()).isEqualTo("Lost the duel");
+    }
+
+    @Test
+    @DisplayName("Perfect tie without a direct bout keeps relative order (no head-to-head data)")
+    void perfectTie_withoutDirectBout_isStable() {
+        var a = entry(1, "First",  1, 10, 10);
+        var b = entry(2, "Second", 1, 10, 10);
+
+        var result = Arrays.stream(new PouleStandingEntry[]{a, b})
+                .sorted(PouleServiceImpl.pouleStandingsComparator(Map.of()))
+                .toList();
+
+        assertThat(result).extracting(PouleStandingEntry::fullName)
+                .containsExactly("First", "Second");
+    }
+
+    @Test
+    @DisplayName("Head-to-head is ignored when the numeric criteria already differ")
+    void headToHead_doesNotOverrideNumericCriteria() {
+        // B beat A directly, but A has more victories — A must still rank first
+        var a = entry(1, "More wins",       3, 15, 8);
+        var b = entry(2, "Beat him though", 2, 15, 8);
+
+        Map<Long, Map<Long, Long>> headToHead = Map.of(
+                1L, Map.of(2L, 2L),
+                2L, Map.of(1L, 2L)
+        );
+
+        var result = Arrays.stream(new PouleStandingEntry[]{b, a})
+                .sorted(PouleServiceImpl.pouleStandingsComparator(headToHead))
+                .toList();
+
+        assertThat(result.get(0).fullName()).isEqualTo("More wins");
     }
 }

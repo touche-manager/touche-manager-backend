@@ -256,6 +256,8 @@ public class PouleServiceImpl implements PouleService {
     public List<PouleStandingEntry> computePouleStandings(Long tournamentId) {
         List<Poule> poules = pouleRepository.findByTournamentIdOrderByNumberAsc(tournamentId);
         Map<Long, PouleStandingData> statsMap = new LinkedHashMap<>();
+        // (athleteA → athleteB → winnerId) for the FIE head-to-head tie-break
+        Map<Long, Map<Long, Long>> headToHead = new HashMap<>();
 
         for (Poule poule : poules) {
             // Initialize all athletes in this poule
@@ -284,20 +286,40 @@ public class PouleServiceImpl implements PouleService {
                     if (statsMap.containsKey(winnerId)) {
                         statsMap.get(winnerId).addVictory();
                     }
+                    if (rightId != null) {
+                        headToHead.computeIfAbsent(leftId, k -> new HashMap<>()).put(rightId, winnerId);
+                        headToHead.computeIfAbsent(rightId, k -> new HashMap<>()).put(leftId, winnerId);
+                    }
                 }
             }
         }
 
         return statsMap.values().stream()
                 .map(PouleStandingData::toEntry)
-                .sorted(
-                    // victories DESC → indicator DESC → touchesScored DESC
-                    // Each criterion reversed independently to avoid the Java Comparator
-                    // pitfall where chained .reversed() inverts the whole comparator.
-                    Comparator.<PouleStandingEntry>comparingInt(PouleStandingEntry::victories).reversed()
-                        .thenComparing(Comparator.comparingInt(PouleStandingEntry::indicator).reversed())
-                        .thenComparing(Comparator.comparingInt(PouleStandingEntry::touchesScored).reversed()))
+                .sorted(pouleStandingsComparator(headToHead))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Official FIE tie-break order:
+     * 1) victories DESC, 2) indicator (TA-TR) DESC, 3) touches scored DESC,
+     * 4) on a perfect tie, direct confrontation (head-to-head winner first).
+     * Each criterion is reversed independently to avoid the Java Comparator
+     * pitfall where chained .reversed() inverts the whole comparator.
+     */
+    static Comparator<PouleStandingEntry> pouleStandingsComparator(Map<Long, Map<Long, Long>> headToHead) {
+        return Comparator.<PouleStandingEntry>comparingInt(PouleStandingEntry::victories).reversed()
+                .thenComparing(Comparator.comparingInt(PouleStandingEntry::indicator).reversed())
+                .thenComparing(Comparator.comparingInt(PouleStandingEntry::touchesScored).reversed())
+                .thenComparing((a, b) -> {
+                    Long winnerId = headToHead
+                            .getOrDefault(a.athleteId(), Collections.emptyMap())
+                            .get(b.athleteId());
+                    if (winnerId == null) return 0;          // never faced each other
+                    if (winnerId.equals(a.athleteId())) return -1;
+                    if (winnerId.equals(b.athleteId())) return 1;
+                    return 0;
+                });
     }
 
     // ─────────────────────────────────────────────────────────────────────────

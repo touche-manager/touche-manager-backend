@@ -4,14 +4,19 @@ import com.touchemanager.athlete.entity.Athlete;
 import com.touchemanager.athlete.repository.AthleteRepository;
 import com.touchemanager.auth.entity.User;
 import com.touchemanager.auth.repository.UserRepository;
+import com.touchemanager.athlete.entity.Gender;
 import com.touchemanager.shared.exception.AthleteNotFoundException;
+import com.touchemanager.tournament.dto.PublicTournamentResponse;
 import com.touchemanager.tournament.dto.TournamentResponse;
 import com.touchemanager.tournament.entity.Category;
 import com.touchemanager.tournament.entity.Enrollment;
 import com.touchemanager.tournament.entity.EnrollmentStatus;
 import com.touchemanager.tournament.entity.Tournament;
+import com.touchemanager.tournament.entity.TournamentPhase;
+import com.touchemanager.tournament.entity.Weapon;
 import com.touchemanager.tournament.repository.EnrollmentRepository;
 import com.touchemanager.tournament.repository.TournamentRepository;
+import com.touchemanager.tournament.repository.TournamentSpecification;
 import com.touchemanager.tournament.service.TournamentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,6 +55,21 @@ public class TournamentServiceImpl implements TournamentService {
                 .filter(t -> t.getGender() == athlete.getGender())     // only matching gender
                 .filter(t -> eligible.contains(t.getCategory()))       // only eligible categories
                 .map(t -> mapToResponse(t, athlete))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PublicTournamentResponse> searchPublicTournaments(
+            TournamentPhase status, Weapon weapon, Category category, Gender gender,
+            LocalDate dateFrom, LocalDate dateTo) {
+        return tournamentRepository
+                .findAll(TournamentSpecification.publicSearch(status, category, gender, weapon, dateFrom, dateTo))
+                .stream()
+                .sorted((a, b) -> b.getDate().compareTo(a.getDate()))
+                .map(t -> new PublicTournamentResponse(
+                        t.getId(), t.getName(), t.getWeapon(), t.getCategory(), t.getGender(),
+                        t.getLocation(), t.getDate(), t.getPhase(), t.isNational()))
                 .collect(Collectors.toList());
     }
 

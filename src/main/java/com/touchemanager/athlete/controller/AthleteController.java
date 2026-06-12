@@ -1,9 +1,13 @@
 package com.touchemanager.athlete.controller;
 
+import com.touchemanager.athlete.dto.AthleteBoutResponse;
 import com.touchemanager.athlete.dto.AthleteRequest;
 import com.touchemanager.athlete.dto.AthleteResponse;
 import com.touchemanager.athlete.service.AthleteService;
+import com.touchemanager.bout.entity.BoutStatus;
 import com.touchemanager.shared.response.ApiResponse;
+
+import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,6 +39,16 @@ public class AthleteController {
             @Valid @RequestBody AthleteRequest request) {
         AthleteResponse response = athleteService.createProfile(email, request);
         return new ApiResponse<>(true, "Athlete profile created successfully", response);
+    }
+
+    @GetMapping("/me/bouts")
+    @Operation(summary = "Historical bouts of the authenticated athlete, optionally filtered by tournament and status")
+    public ApiResponse<List<AthleteBoutResponse>> getMyBouts(
+            @AuthenticationPrincipal String email,
+            @RequestParam(required = false) Long tournamentId,
+            @RequestParam(required = false) BoutStatus status) {
+        return new ApiResponse<>(true, "Combates obtenidos correctamente",
+                athleteService.getMyBouts(email, tournamentId, status));
     }
 
     @PutMapping("/profile")

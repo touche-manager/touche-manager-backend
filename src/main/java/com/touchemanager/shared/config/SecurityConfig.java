@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/users/profile-picture/**",
                                 "/api/tournaments/*/results",
+                                "/api/tournaments/public",
                                 "/api/bouts/*/live",
                                 "/api/rankings/**",
                                 "/ws/**",

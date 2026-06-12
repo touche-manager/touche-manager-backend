@@ -237,7 +237,9 @@ public class BoutServiceImpl implements BoutService {
 
         bout.setPriority(side);
         log.info("Priority assigned to {} in bout {}", side, boutId);
-        return toResponse(boutRepository.save(bout));
+        Bout saved = boutRepository.save(bout);
+        publishLiveUpdate(saved);
+        return toResponse(saved);
     }
 
     // ── Piste Assignment ─────────────────────────────────────────────────────

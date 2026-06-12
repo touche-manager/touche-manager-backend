@@ -34,6 +34,9 @@ class AthleteServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private com.touchemanager.bout.repository.BoutRepository boutRepository;
+
     @InjectMocks
     private AthleteServiceImpl athleteService;
 

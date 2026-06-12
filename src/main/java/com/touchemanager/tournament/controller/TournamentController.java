@@ -1,10 +1,18 @@
 package com.touchemanager.tournament.controller;
 
+import com.touchemanager.athlete.entity.Gender;
 import com.touchemanager.shared.response.ApiResponse;
 import com.touchemanager.tournament.dto.EnrollmentRequest;
 import com.touchemanager.tournament.dto.EnrollmentResponse;
 import com.touchemanager.tournament.dto.PaymentConfirmRequest;
+import com.touchemanager.tournament.dto.PublicTournamentResponse;
 import com.touchemanager.tournament.dto.TournamentResponse;
+import com.touchemanager.tournament.entity.Category;
+import com.touchemanager.tournament.entity.TournamentPhase;
+import com.touchemanager.tournament.entity.Weapon;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
 import com.touchemanager.tournament.service.EnrollmentService;
 import com.touchemanager.tournament.service.TournamentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +39,19 @@ public class TournamentController {
     public ApiResponse<List<TournamentResponse>> getAvailableTournaments(@AuthenticationPrincipal String email) {
         List<TournamentResponse> response = tournamentService.getAvailableTournaments(email);
         return new ApiResponse<>(true, "Tournaments retrieved successfully", response);
+    }
+
+    @GetMapping("/public")
+    @Operation(summary = "Public tournament search with optional filters (no auth required)")
+    public ApiResponse<List<PublicTournamentResponse>> searchPublicTournaments(
+            @RequestParam(required = false) TournamentPhase status,
+            @RequestParam(required = false) Weapon weapon,
+            @RequestParam(required = false) Category category,
+            @RequestParam(required = false) Gender gender,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
+        return new ApiResponse<>(true, "Torneos obtenidos correctamente",
+                tournamentService.searchPublicTournaments(status, weapon, category, gender, dateFrom, dateTo));
     }
 
     @GetMapping("/{id}")

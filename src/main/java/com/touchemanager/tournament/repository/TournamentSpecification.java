@@ -54,6 +54,35 @@ public class TournamentSpecification {
                 cb.lessThanOrEqualTo(root.get("date"), to);
     }
 
+    public static Specification<Tournament> hasPhase(TournamentPhase phase) {
+        return (root, query, cb) ->
+                cb.equal(root.get("phase"), phase);
+    }
+
+    /**
+     * Public tournament search: any phase unless one is given.
+     * Only non-null filters are added as predicates.
+     */
+    public static Specification<Tournament> publicSearch(
+            TournamentPhase phase,
+            Category category,
+            Gender gender,
+            Weapon weapon,
+            LocalDate dateFrom,
+            LocalDate dateTo) {
+
+        Specification<Tournament> spec = (root, query, cb) -> cb.conjunction();
+
+        if (phase    != null) spec = spec.and(hasPhase(phase));
+        if (category != null) spec = spec.and(hasCategory(category));
+        if (gender   != null) spec = spec.and(hasGender(gender));
+        if (weapon   != null) spec = spec.and(hasWeapon(weapon));
+        if (dateFrom != null) spec = spec.and(dateFrom(dateFrom));
+        if (dateTo   != null) spec = spec.and(dateTo(dateTo));
+
+        return spec;
+    }
+
     /**
      * Composes a single Specification from all provided (nullable) filters.
      * Only non-null filters are added as predicates — avoids the PostgreSQL
