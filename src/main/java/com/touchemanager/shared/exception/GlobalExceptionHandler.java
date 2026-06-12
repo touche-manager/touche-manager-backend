@@ -141,4 +141,10 @@ public class GlobalExceptionHandler {
     public ApiResponse<Void> handleBoutNotFound(BoutNotFoundException ex) {
         return new ApiResponse<>(false, ex.getMessage(), null);
     }
+
+    @ExceptionHandler(NotificationNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiResponse<Void> handleNotificationNotFound(NotificationNotFoundException ex) {
+        return new ApiResponse<>(false, ex.getMessage(), null);
+    }
 }

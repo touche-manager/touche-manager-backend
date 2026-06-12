@@ -108,7 +108,9 @@ public record TournamentResultResponse(
                 int scoreLeft,
                 int scoreRight,
                 String winnerName,
-                boolean finished
+                boolean finished,
+                String status,
+                String piste
         ) {}
     }
 }

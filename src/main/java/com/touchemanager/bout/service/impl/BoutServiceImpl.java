@@ -6,6 +6,7 @@ import com.touchemanager.auth.entity.User;
 import com.touchemanager.auth.repository.UserRepository;
 import com.touchemanager.bout.dto.BoutEventRequest;
 import com.touchemanager.bout.dto.BoutEventResponse;
+import com.touchemanager.bout.dto.BoutLiveUpdate;
 import com.touchemanager.bout.dto.BoutRequest;
 import com.touchemanager.bout.dto.BoutResponse;
 import com.touchemanager.bout.dto.TournamentStandingsResponse;
@@ -19,6 +20,7 @@ import com.touchemanager.bout.entity.EventType;
 import com.touchemanager.bout.repository.BoutEventRepository;
 import com.touchemanager.bout.repository.BoutRepository;
 import com.touchemanager.bout.service.BoutService;
+import com.touchemanager.bout.sse.BoutSseEmitterRegistry;
 import com.touchemanager.shared.exception.BoutNotFoundException;
 import com.touchemanager.shared.exception.TournamentNotFoundException;
 import com.touchemanager.shared.exception.UserNotFoundException;
@@ -61,6 +63,7 @@ public class BoutServiceImpl implements BoutService {
     private final AthleteRepository athleteRepository;
     private final UserRepository userRepository;
     private final PouleRepository pouleRepository;
+    private final BoutSseEmitterRegistry sseEmitterRegistry;
 
     @Override
     @Transactional(readOnly = true)
@@ -127,7 +130,9 @@ public class BoutServiceImpl implements BoutService {
             log.info("Poule {} transitioned to IN_PROGRESS", bout.getPoule().getNumber());
         }
 
-        return toResponse(boutRepository.save(bout));
+        Bout saved = boutRepository.save(bout);
+        publishLiveUpdate(saved);
+        return toResponse(saved);
     }
 
     @Override
@@ -165,7 +170,9 @@ public class BoutServiceImpl implements BoutService {
             afterBoutFinished(bout);
         }
 
-        return toResponse(boutRepository.save(bout));
+        Bout saved = boutRepository.save(bout);
+        publishLiveUpdate(saved);
+        return toResponse(saved);
     }
 
     @Override
@@ -178,7 +185,9 @@ public class BoutServiceImpl implements BoutService {
         }
 
         bout.setElapsedSeconds(elapsedSeconds);
-        return toResponse(boutRepository.save(bout));
+        Bout saved = boutRepository.save(bout);
+        publishLiveUpdate(saved);
+        return toResponse(saved);
     }
 
     @Override
@@ -210,7 +219,9 @@ public class BoutServiceImpl implements BoutService {
         }
 
         afterBoutFinished(bout);
-        return toResponse(boutRepository.save(bout));
+        Bout saved = boutRepository.save(bout);
+        publishLiveUpdate(saved);
+        return toResponse(saved);
     }
 
     // ── Priority Assignment ─────────────────────────────────────────────────
@@ -227,6 +238,50 @@ public class BoutServiceImpl implements BoutService {
         bout.setPriority(side);
         log.info("Priority assigned to {} in bout {}", side, boutId);
         return toResponse(boutRepository.save(bout));
+    }
+
+    // ── Piste Assignment ─────────────────────────────────────────────────────
+
+    @Override
+    @Transactional
+    public BoutResponse updatePiste(String email, Long boutId, String piste) {
+        Bout bout = getBout(boutId);
+        bout.setPiste(piste);
+        log.info("Piste '{}' assigned to bout {}", piste, boutId);
+        Bout saved = boutRepository.save(bout);
+        publishLiveUpdate(saved);
+        return toResponse(saved);
+    }
+
+    // ── Live scoreboard (SSE) ────────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public BoutLiveUpdate getLiveSnapshot(Long boutId) {
+        return toLiveUpdate(getBout(boutId));
+    }
+
+    private void publishLiveUpdate(Bout bout) {
+        sseEmitterRegistry.broadcast(bout.getId(), toLiveUpdate(bout));
+    }
+
+    private BoutLiveUpdate toLiveUpdate(Bout bout) {
+        return new BoutLiveUpdate(
+                bout.getId(),
+                bout.getScoreLeft(),
+                bout.getScoreRight(),
+                fullName(bout.getAthleteLeft()),
+                bout.getAthleteRight() != null ? fullName(bout.getAthleteRight()) : "BYE",
+                bout.getStatus(),
+                bout.getElapsedSeconds(),
+                bout.getCurrentPeriod(),
+                bout.getPiste(),
+                bout.getWinner() != null ? fullName(bout.getWinner()) : null
+        );
+    }
+
+    private String fullName(Athlete athlete) {
+        return athlete.getFirstName() + " " + athlete.getLastName();
     }
 
     // ── Post-finish hooks (poule status + bracket advancement) ───────────────
@@ -490,6 +545,7 @@ public class BoutServiceImpl implements BoutService {
                 pouleId,
                 pouleNumber,
                 bout.getBoutOrder(),
+                bout.getPiste(),
                 bout.getFormat(),
                 bout.getStatus(),
                 toAthleteSummary(bout.getAthleteLeft()),

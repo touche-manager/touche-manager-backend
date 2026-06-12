@@ -746,7 +746,9 @@ public class PouleServiceImpl implements PouleService {
                             b.getWinner() != null
                                     ? b.getWinner().getFirstName() + " " + b.getWinner().getLastName()
                                     : null,
-                            b.getStatus() == BoutStatus.FINISHED
+                            b.getStatus() == BoutStatus.FINISHED,
+                            b.getStatus().name(),
+                            b.getPiste()
                     ))
                     .toList();
             rounds.add(new TournamentResultResponse.BracketData.BracketRound(
@@ -912,6 +914,7 @@ public class PouleServiceImpl implements PouleService {
                 pouleId,
                 pouleNumber,
                 bout.getBoutOrder(),
+                bout.getPiste(),
                 bout.getFormat(),
                 bout.getStatus(),
                 toAthleteSummary(bout.getAthleteLeft()),

@@ -50,6 +50,9 @@ class BoutServiceImplTest {
     @Mock
     private AthleteRepository athleteRepository;
 
+    @Mock
+    private com.touchemanager.bout.sse.BoutSseEmitterRegistry sseEmitterRegistry;
+
     @InjectMocks
     private BoutServiceImpl service;
 

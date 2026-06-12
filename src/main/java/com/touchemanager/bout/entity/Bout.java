@@ -76,6 +76,10 @@ public class Bout {
     @Column(name = "bout_order")
     private Integer boutOrder;
 
+    /** Piste (strip) where the bout takes place, assigned by the organizer (e.g. "Pista A") */
+    @Column(name = "piste", length = 50)
+    private String piste;
+
     /** Non-null for elimination bouts */
     @Enumerated(EnumType.STRING)
     @Column(name = "elimination_round", length = 20)

@@ -1,6 +1,7 @@
 package com.touchemanager.bout.service;
 
 import com.touchemanager.bout.dto.BoutEventRequest;
+import com.touchemanager.bout.dto.BoutLiveUpdate;
 import com.touchemanager.bout.dto.BoutRequest;
 import com.touchemanager.bout.dto.BoutResponse;
 import com.touchemanager.bout.dto.TournamentStandingsResponse;
@@ -46,4 +47,10 @@ public interface BoutService {
 
     /** Advance the winner of a finished elimination bout to the next round */
     void advanceEliminationWinner(Bout finishedBout);
+
+    /** Assign the piste (strip) where the bout will take place */
+    BoutResponse updatePiste(String email, Long boutId, String piste);
+
+    /** Current state of a bout for public live-scoreboard subscribers */
+    BoutLiveUpdate getLiveSnapshot(Long boutId);
 }

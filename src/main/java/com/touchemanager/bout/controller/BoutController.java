@@ -4,6 +4,7 @@ import com.touchemanager.bout.dto.BoutEventRequest;
 import com.touchemanager.bout.dto.BoutRequest;
 import com.touchemanager.bout.dto.BoutResponse;
 import com.touchemanager.bout.dto.ElapsedTimeRequest;
+import com.touchemanager.bout.dto.PisteRequest;
 import com.touchemanager.bout.dto.TournamentStandingsResponse;
 import com.touchemanager.bout.entity.EventSide;
 import com.touchemanager.bout.service.BoutService;
@@ -101,6 +102,17 @@ public class BoutController {
             @Valid @RequestBody ElapsedTimeRequest request) {
         return new ApiResponse<>(true, "Elapsed time updated successfully",
                 boutService.updateElapsedTime(email, boutId, request.getElapsedSeconds()));
+    }
+
+    @PatchMapping("/{boutId}/piste")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @Operation(summary = "Assign the piste (strip) where the bout takes place")
+    public ApiResponse<BoutResponse> updatePiste(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long boutId,
+            @Valid @RequestBody PisteRequest request) {
+        return new ApiResponse<>(true, "Pista asignada correctamente",
+                boutService.updatePiste(email, boutId, request.getPiste()));
     }
 
     @PostMapping("/{boutId}/finish")

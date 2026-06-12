@@ -15,6 +15,7 @@ public record BoutResponse(
         Long pouleId,
         Integer pouleNumber,
         Integer boutOrder,
+        String piste,
         BoutFormat format,
         BoutStatus status,
         AthleteSummary athleteLeft,
