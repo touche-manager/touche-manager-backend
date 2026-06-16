@@ -14,6 +14,7 @@ import com.touchemanager.bout.repository.BoutRepository;
 import com.touchemanager.shared.exception.AthleteAlreadyExistsException;
 import com.touchemanager.shared.exception.AthleteNotFoundException;
 import com.touchemanager.shared.exception.DniAlreadyExistsException;
+import com.touchemanager.tournament.repository.EnrollmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class AthleteServiceImpl implements AthleteService {
     private final AthleteRepository athleteRepository;
     private final UserRepository userRepository;
     private final BoutRepository boutRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,6 +79,11 @@ public class AthleteServiceImpl implements AthleteService {
 
         Athlete athlete = athleteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AthleteNotFoundException(email));
+
+        if (enrollmentRepository.hasActiveEnrollmentInUnfinishedTournament(athlete.getId())) {
+            throw new IllegalArgumentException(
+                    "No podés editar tu perfil mientras estés inscripto en un torneo que no finalizó.");
+        }
 
         athleteRepository.findByDni(request.getDni()).ifPresent(other -> {
             if (!other.getId().equals(athlete.getId())) {
@@ -153,7 +160,8 @@ public class AthleteServiceImpl implements AthleteService {
                 athlete.getGender(),
                 athlete.getDominantHand(),
                 athlete.getClub(),
-                athlete.getProvince()
+                athlete.getProvince(),
+                !enrollmentRepository.hasActiveEnrollmentInUnfinishedTournament(athlete.getId())
         );
     }
 }

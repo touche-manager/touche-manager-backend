@@ -52,6 +52,7 @@ public class TournamentServiceImpl implements TournamentService {
         Set<Category> eligible = getEligibleCategories(athleteCategory);
 
         return tournaments.stream()
+                .filter(t -> t.getPhase() == TournamentPhase.ENROLLMENT) // hide tournaments already started/finished
                 .filter(t -> t.getGender() == athlete.getGender())     // only matching gender
                 .filter(t -> eligible.contains(t.getCategory()))       // only eligible categories
                 .map(t -> mapToResponse(t, athlete))

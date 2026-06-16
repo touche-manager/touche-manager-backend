@@ -1,5 +1,6 @@
 package com.touchemanager.tournament.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.touchemanager.athlete.entity.Gender;
 import com.touchemanager.tournament.entity.Category;
 import com.touchemanager.tournament.entity.Weapon;
@@ -42,6 +43,11 @@ public class TournamentRequest {
 
     private BigDecimal advancementRate = BigDecimal.ONE;
 
-    /** If true, this tournament is a National Championship (coefficient 1.2 in rankings) */
+    /**
+     * If true, this tournament is a National Championship (coefficient 1.2 in rankings).
+     * Explicit @JsonProperty because Lombok names the accessors isNational()/setNational(),
+     * which would otherwise make Jackson bind the JSON key "national" instead of "isNational".
+     */
+    @JsonProperty("isNational")
     private boolean isNational = false;
 }

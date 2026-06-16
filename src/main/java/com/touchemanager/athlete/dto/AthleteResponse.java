@@ -16,5 +16,7 @@ public record AthleteResponse(
         Gender gender,
         DominantHand dominantHand,
         String club,
-        String province
+        String province,
+        /** False while the athlete has an active enrollment in an unfinished tournament (profile is locked) */
+        boolean canEditProfile
 ) {}

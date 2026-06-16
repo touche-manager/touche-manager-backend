@@ -74,7 +74,8 @@ class AthleteControllerTest {
                 Gender.MALE,
                 DominantHand.RIGHT,
                 "Fencing Club",
-                "Buenos Aires"
+                "Buenos Aires",
+                true
         );
 
         athleteRequest = new AthleteRequest(

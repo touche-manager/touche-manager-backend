@@ -60,14 +60,13 @@ public class OrganizerTournamentServiceImpl implements OrganizerTournamentServic
         User organizer = getUserByEmail(email);
         Tournament tournament = getOwnedTournament(organizer, tournamentId);
 
+        // Only name, location and date are editable after creation.
+        // Weapon, category, gender, base price and national flag are immutable
+        // because athletes enroll based on them — changing them would invalidate
+        // existing enrollments. Any such fields in the request are ignored.
         tournament.setName(request.getName());
-        tournament.setWeapon(request.getWeapon());
-        tournament.setCategory(request.getCategory());
-        tournament.setGender(request.getGender());
         tournament.setLocation(request.getLocation());
         tournament.setDate(request.getDate());
-        tournament.setBasePrice(request.getBasePrice());
-        tournament.setNational(request.isNational());
 
         Tournament saved = tournamentRepository.save(tournament);
         List<Enrollment> enrollments = enrollmentRepository.findByTournamentId(saved.getId());

@@ -126,6 +126,7 @@ public class PouleServiceImpl implements PouleService {
         int n = athletes.size();
 
         int[][] pairings = getFieBoutOrder(n);
+        validatePairings(pairings, n);
 
         int order = 1;
         for (int[] pair : pairings) {
@@ -148,7 +149,7 @@ public class PouleServiceImpl implements PouleService {
      * Each int[] is {left, right} using 1-based fencer positions.
      * Source: FIE Rules for Competitions, Annex — Tables of poule bouts.
      */
-    private static int[][] getFieBoutOrder(int pouleSize) {
+    static int[][] getFieBoutOrder(int pouleSize) {
         return switch (pouleSize) {
             case 4 -> new int[][] {
                 {1,2}, {3,4}, {1,3}, {2,4}, {4,1}, {2,3}
@@ -158,9 +159,9 @@ public class PouleServiceImpl implements PouleService {
                 {1,3}, {2,5}, {4,1}, {3,5}, {4,2}
             };
             case 6 -> new int[][] {
-                {1,2}, {4,3}, {6,5}, {3,1}, {2,6}, {5,4},
-                {1,4}, {5,3}, {6,1}, {4,2}, {5,1}, {3,6},
-                {2,4}, {1,5}, {6,3}
+                {1,2}, {4,5}, {2,3}, {5,6}, {3,1},
+                {6,4}, {2,5}, {1,4}, {5,3}, {1,6},
+                {4,2}, {3,6}, {5,1}, {3,4}, {6,2}
             };
             case 7 -> new int[][] {
                 {1,4}, {2,5}, {3,6}, {7,1}, {5,4}, {2,3}, {6,7},
@@ -172,6 +173,29 @@ public class PouleServiceImpl implements PouleService {
                 // since poule generation always produces sizes 4-7)
                 generateGenericPairings(pouleSize);
         };
+    }
+
+    /**
+     * Guards against a malformed bout-ordering table: a poule of N fencers must
+     * produce exactly C(N,2) bouts covering each unordered pair exactly once.
+     * Fails loudly instead of silently generating duplicate/missing bouts.
+     */
+    private static void validatePairings(int[][] pairings, int n) {
+        int expected = n * (n - 1) / 2;
+        Set<String> seen = new HashSet<>();
+        for (int[] pair : pairings) {
+            int lo = Math.min(pair[0], pair[1]);
+            int hi = Math.max(pair[0], pair[1]);
+            if (!seen.add(lo + "-" + hi)) {
+                throw new IllegalStateException(
+                        "Bout-ordering table for poule size " + n + " repeats pair " + lo + "-" + hi);
+            }
+        }
+        if (seen.size() != expected) {
+            throw new IllegalStateException(
+                    "Bout-ordering table for poule size " + n + " has " + seen.size()
+                            + " unique pairs, expected " + expected);
+        }
     }
 
     /** Fallback: generic N*(N-1)/2 round-robin without FIE ordering */
@@ -734,10 +758,10 @@ public class PouleServiceImpl implements PouleService {
                 EliminationRound.FINAL
         );
         Map<String, String> roundLabels = Map.of(
-                "ROUND_OF_64",  "64avos",
-                "ROUND_OF_32",  "32avos",
-                "ROUND_OF_16",  "16avos",
-                "QUARTERFINAL", "Cuartos de Final",
+                "ROUND_OF_64",  "32avos de final",
+                "ROUND_OF_32",  "16avos de final",
+                "ROUND_OF_16",  "Octavos de final",
+                "QUARTERFINAL", "Cuartos de final",
                 "SEMIFINAL",    "Semifinal",
                 "FINAL",        "Final"
         );
