@@ -378,15 +378,29 @@ public class PouleServiceImpl implements PouleService {
         // Determine round
         EliminationRound firstRound = roundForTableau(tableauSize);
 
-        // Generate bout pairs: seed 1 vs last, 2 vs second-to-last, etc.
+        // Build FIE-standard slot ordering for this tableau size.
+        // buildFieTableau(n) returns a list of 'n' seed numbers in bracket slot order,
+        // so that consecutive pairs (slots 0-1, 2-3, ...) are the first-round bouts and
+        // the top two seeds can only meet in the final.
+        // Example for n=8: [1, 8, 5, 4, 3, 6, 7, 2]
+        List<Integer> slots = buildFieTableau(tableauSize);
+
         List<Bout> eliminationBouts = new ArrayList<>();
         int half = tableauSize / 2;
         for (int pos = 1; pos <= half; pos++) {
-            int leftSeed  = pos;
-            int rightSeed = tableauSize - pos + 1;
+            // Each pair of consecutive slots forms one bout
+            int leftSeed  = slots.get((pos - 1) * 2);
+            int rightSeed = slots.get((pos - 1) * 2 + 1);
 
             Athlete left  = getAthleteForSeed(qualified, leftSeed);
             Athlete right = getAthleteForSeed(qualified, rightSeed); // null = BYE
+
+            // Normalise: if left is the BYE slot and right is a real athlete, swap so that
+            // athleteLeft always holds the real competitor and athleteRight == null marks the BYE.
+            if (left == null && right != null) {
+                left  = right;
+                right = null;
+            }
 
             Bout bout = new Bout();
             bout.setTournament(tournament);
@@ -816,6 +830,35 @@ public class PouleServiceImpl implements PouleService {
     // ─────────────────────────────────────────────────────────────────────────
     // Private helpers
     // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Builds the FIE-standard bracket slot list for a tableau of the given power-of-2 size.
+     *
+     * The algorithm works recursively:
+     *   - A tableau of size 1 has a single slot: [1]
+     *   - Each step doubles the list by expanding every seed s into [s, n+1-s]
+     *     where n is the current size, effectively interleaving each seed with
+     *     its "complement" opponent.
+     *
+     * Result for size 8: [1, 8, 5, 4, 3, 6, 7, 2]
+     * This guarantees that seeds can only meet opponents from the correct half
+     * of the bracket, so seeds 1 and 2 can only meet in the final.
+     */
+    private List<Integer> buildFieTableau(int size) {
+        List<Integer> slots = new ArrayList<>();
+        slots.add(1);
+        int currentSize = 1;
+        while (currentSize < size) {
+            currentSize *= 2;
+            List<Integer> next = new ArrayList<>();
+            for (int seed : slots) {
+                next.add(seed);
+                next.add(currentSize + 1 - seed);
+            }
+            slots = next;
+        }
+        return slots;
+    }
 
     /**
      * Returns the Athlete entity for a given 1-based seed position from the standings list.
