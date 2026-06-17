@@ -25,6 +25,8 @@ import com.touchemanager.tournament.repository.PouleRepository;
 import com.touchemanager.tournament.repository.RefereeApplicationRepository;
 import com.touchemanager.tournament.repository.TournamentRepository;
 import com.touchemanager.tournament.service.PouleService;
+import com.touchemanager.notification.service.NotificationService;
+import com.touchemanager.notification.entity.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,7 @@ public class PouleServiceImpl implements PouleService {
     private final AthleteRepository athleteRepository;
     private final RefereeApplicationRepository refereeApplicationRepository;
     private final BoutService boutService;
+    private final NotificationService notificationService;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Poule Generation
@@ -257,6 +260,16 @@ public class PouleServiceImpl implements PouleService {
         if (!poule.getReferees().contains(referee)) {
             poule.getReferees().add(referee);
             pouleRepository.save(poule);
+
+            // Notify referee of assignment
+            notificationService.sendNotification(
+                    referee.getId(),
+                    poule.getTournament().getId(),
+                    null,
+                    NotificationType.REFEREE_ASSIGNMENT,
+                    String.format("Fuiste asignado/a como árbitro de la Poule %d en el torneo '%s'.",
+                            poule.getNumber(), poule.getTournament().getName())
+            );
         }
         return toPouleResponse(poule);
     }
@@ -266,6 +279,20 @@ public class PouleServiceImpl implements PouleService {
     public PouleResponse removeRefereeFromPoule(String organizerEmail, Long pouleId, Long refereeUserId) {
         Poule poule = pouleRepository.findById(pouleId)
                 .orElseThrow(() -> new IllegalArgumentException("Poule no encontrada: " + pouleId));
+
+        // Find the referee before removing to send notification
+        poule.getReferees().stream()
+                .filter(r -> r.getId().equals(refereeUserId))
+                .findFirst()
+                .ifPresent(referee -> notificationService.sendNotification(
+                        referee.getId(),
+                        poule.getTournament().getId(),
+                        null,
+                        NotificationType.REFEREE_ASSIGNMENT,
+                        String.format("Fuiste removido/a de la Poule %d en el torneo '%s'.",
+                                poule.getNumber(), poule.getTournament().getName())
+                ));
+
         poule.getReferees().removeIf(r -> r.getId().equals(refereeUserId));
         pouleRepository.save(poule);
         return toPouleResponse(poule);
@@ -935,7 +962,62 @@ public class PouleServiceImpl implements PouleService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Mapping helpers
+    // Start Poule
+    // ─────────────────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional
+    public PouleResponse startPoule(String refereeEmail, Long pouleId) {
+        Poule poule = pouleRepository.findById(pouleId)
+                .orElseThrow(() -> new IllegalArgumentException("Poule no encontrada: " + pouleId));
+
+        // Validate referee is assigned to this poule
+        User referee = getUserByEmail(refereeEmail);
+        boolean isAssigned = poule.getReferees().stream()
+                .anyMatch(r -> r.getId().equals(referee.getId()));
+        if (!isAssigned) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No estás asignado como árbitro de esta poule.");
+        }
+
+        if (poule.getStatus() != PouleStatus.PENDING) {
+            throw new IllegalStateException(
+                    "La poule ya fue iniciada o finalizada (estado actual: " + poule.getStatus() + ").");
+        }
+
+        // Transition poule to IN_PROGRESS
+        poule.setStatus(PouleStatus.IN_PROGRESS);
+        pouleRepository.save(poule);
+
+        // Send YOUR_TURN to athletes of the first bout (boutOrder = 1)
+        boutRepository.findByPouleIdAndBoutOrder(poule.getId(), 1).ifPresent(firstBout -> {
+            String pouleLabel = "Poule " + poule.getNumber();
+            if (firstBout.getAthleteLeft() != null && firstBout.getAthleteRight() != null) {
+                String opponentLeft = firstBout.getAthleteRight().getFirstName() + " " + firstBout.getAthleteRight().getLastName();
+                String opponentRight = firstBout.getAthleteLeft().getFirstName() + " " + firstBout.getAthleteLeft().getLastName();
+
+                notificationService.sendNotification(
+                        firstBout.getAthleteLeft().getUser().getId(),
+                        poule.getTournament().getId(),
+                        firstBout.getId(),
+                        NotificationType.YOUR_TURN,
+                        String.format("¡Es tu turno! Te toca disputar tu asalto contra %s en la %s.",
+                                opponentLeft, pouleLabel)
+                );
+                notificationService.sendNotification(
+                        firstBout.getAthleteRight().getUser().getId(),
+                        poule.getTournament().getId(),
+                        firstBout.getId(),
+                        NotificationType.YOUR_TURN,
+                        String.format("¡Es tu turno! Te toca disputar tu asalto contra %s en la %s.",
+                                opponentRight, pouleLabel)
+                );
+            }
+        });
+
+        return toPouleResponse(poule);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
 
     private PouleResponse toPouleResponse(Poule poule) {

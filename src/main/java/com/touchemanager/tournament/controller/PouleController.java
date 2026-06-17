@@ -112,6 +112,16 @@ public class PouleController {
                 pouleService.getRefereePoules(email, tournamentId));
     }
 
+    @PostMapping("/api/poules/{pouleId}/start")
+    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @Operation(summary = "Referee starts a poule: transitions from PENDING to IN_PROGRESS and notifies the athletes of the first bout")
+    public ApiResponse<PouleResponse> startPoule(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long pouleId) {
+        return new ApiResponse<>(true, "Poule iniciada correctamente",
+                pouleService.startPoule(email, pouleId));
+    }
+
     // ── Common: standings and bracket ────────────────────────────────────────
 
     @GetMapping("/api/tournaments/{tournamentId}/standings")

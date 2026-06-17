@@ -2,6 +2,7 @@ package com.touchemanager.notification.service;
 
 import com.touchemanager.notification.dto.NotificationDTO;
 import com.touchemanager.notification.dto.NotifyUpcomingBoutRequest;
+import com.touchemanager.notification.entity.NotificationType;
 
 import java.util.List;
 
@@ -19,4 +20,7 @@ public interface NotificationService {
     NotificationDTO markAsRead(String email, Long notificationId);
 
     void markAllAsRead(String email);
+
+    /** Save and push a generic notification via WebSocket */
+    NotificationDTO sendNotification(Long recipientUserId, Long tournamentId, Long boutId, NotificationType type, String message);
 }

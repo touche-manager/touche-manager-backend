@@ -23,6 +23,9 @@ import com.touchemanager.bout.service.BoutService;
 import com.touchemanager.bout.sse.BoutSseEmitterRegistry;
 import com.touchemanager.shared.exception.BoutNotFoundException;
 import com.touchemanager.shared.exception.TournamentNotFoundException;
+import com.touchemanager.notification.service.NotificationService;
+import com.touchemanager.notification.entity.NotificationType;
+import com.touchemanager.notification.dto.NotificationDTO;
 import com.touchemanager.shared.exception.UserNotFoundException;
 import com.touchemanager.tournament.dto.AssignRefereeRequest;
 import com.touchemanager.tournament.dto.OrganizerTournamentResponse;
@@ -63,6 +66,7 @@ public class BoutServiceImpl implements BoutService {
     private final AthleteRepository athleteRepository;
     private final UserRepository userRepository;
     private final PouleRepository pouleRepository;
+    private final NotificationService notificationService;
     private final BoutSseEmitterRegistry sseEmitterRegistry;
 
     @Override
@@ -131,6 +135,47 @@ public class BoutServiceImpl implements BoutService {
         }
 
         Bout saved = boutRepository.save(bout);
+
+        // Notify fencers of the NEXT bout (if this is a poule bout)
+        if (saved.getPoule() != null && saved.getBoutOrder() != null) {
+            Optional<Bout> nextBoutOpt = boutRepository.findByPouleIdAndBoutOrder(
+                    saved.getPoule().getId(), saved.getBoutOrder() + 1);
+            if (nextBoutOpt.isPresent()) {
+                Bout nextBout = nextBoutOpt.get();
+                String pisteName = nextBout.getPiste() != null ? nextBout.getPiste() : "pista a confirmar";
+
+                // Notify Left fencer
+                if (nextBout.getAthleteLeft() != null) {
+                    String opponentName = nextBout.getAthleteRight() != null 
+                        ? nextBout.getAthleteRight().getFirstName() + " " + nextBout.getAthleteRight().getLastName()
+                        : "rival a confirmar";
+                    notificationService.sendNotification(
+                            nextBout.getAthleteLeft().getUser().getId(),
+                            nextBout.getTournament().getId(),
+                            nextBout.getId(),
+                            NotificationType.NEXT_UP,
+                            String.format("¡Preparate! Te toca el próximo asalto contra %s en la pista %s.",
+                                    opponentName, pisteName)
+                    );
+                }
+
+                // Notify Right fencer
+                if (nextBout.getAthleteRight() != null) {
+                    String opponentName = nextBout.getAthleteLeft() != null 
+                        ? nextBout.getAthleteLeft().getFirstName() + " " + nextBout.getAthleteLeft().getLastName()
+                        : "rival a confirmar";
+                    notificationService.sendNotification(
+                            nextBout.getAthleteRight().getUser().getId(),
+                            nextBout.getTournament().getId(),
+                            nextBout.getId(),
+                            NotificationType.NEXT_UP,
+                            String.format("¡Preparate! Te toca el próximo asalto contra %s en la pista %s.",
+                                    opponentName, pisteName)
+                    );
+                }
+            }
+        }
+
         publishLiveUpdate(saved);
         return toResponse(saved);
     }

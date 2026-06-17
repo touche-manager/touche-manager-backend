@@ -12,6 +12,9 @@ import com.touchemanager.tournament.entity.Tournament;
 import com.touchemanager.tournament.repository.RefereeApplicationRepository;
 import com.touchemanager.tournament.repository.TournamentRepository;
 import com.touchemanager.tournament.service.RefereeApplicationService;
+import com.touchemanager.notification.service.NotificationService;
+import com.touchemanager.notification.entity.NotificationType;
+import com.touchemanager.notification.dto.NotificationDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +30,7 @@ public class RefereeApplicationServiceImpl implements RefereeApplicationService 
     private final RefereeApplicationRepository applicationRepository;
     private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -44,8 +48,19 @@ public class RefereeApplicationServiceImpl implements RefereeApplicationService 
         application.setTournament(tournament);
         application.setStatus(RefereeApplicationStatus.PENDING);
         application.setAppliedAt(LocalDateTime.now());
+        RefereeApplication saved = applicationRepository.save(application);
 
-        return toResponse(applicationRepository.save(application));
+        // Notify tournament organizer
+        notificationService.sendNotification(
+                tournament.getCreatedBy().getId(),
+                tournament.getId(),
+                null,
+                NotificationType.REFEREE_REQUEST,
+                String.format("El árbitro %s solicitó arbitrar en tu torneo '%s'.",
+                        referee.getEmail(), tournament.getName())
+        );
+
+        return toResponse(saved);
     }
 
     @Override
@@ -77,7 +92,20 @@ public class RefereeApplicationServiceImpl implements RefereeApplicationService 
         }
         application.setStatus(request.status());
         application.setReviewedAt(LocalDateTime.now());
-        return toResponse(applicationRepository.save(application));
+        RefereeApplication saved = applicationRepository.save(application);
+
+        // Notify referee of confirmation
+        String statusStr = saved.getStatus() == RefereeApplicationStatus.ACCEPTED ? "aceptada" : "rechazada";
+        notificationService.sendNotification(
+                saved.getReferee().getId(),
+                saved.getTournament().getId(),
+                null,
+                NotificationType.REFEREE_CONFIRMATION,
+                String.format("Tu solicitud para arbitrar en el torneo '%s' fue %s.",
+                        saved.getTournament().getName(), statusStr)
+        );
+
+        return toResponse(saved);
     }
 
     @Override

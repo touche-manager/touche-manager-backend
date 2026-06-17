@@ -33,4 +33,10 @@ public interface PouleService {
 
     /** Get final tournament results (podium + full standings). Works for any phase. */
     TournamentResultResponse getTournamentResults(Long tournamentId);
+
+    /**
+     * Referee starts a poule: PENDING → IN_PROGRESS.
+     * Sends YOUR_TURN notifications to the athletes of boutOrder=1.
+     */
+    PouleResponse startPoule(String refereeEmail, Long pouleId);
 }

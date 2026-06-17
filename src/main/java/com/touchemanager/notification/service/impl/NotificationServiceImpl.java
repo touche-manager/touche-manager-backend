@@ -141,4 +141,24 @@ public class NotificationServiceImpl implements NotificationService {
                 n.getCreatedAt()
         );
     }
+
+    @Override
+    @Transactional
+    public NotificationDTO sendNotification(Long recipientUserId, Long tournamentId, Long boutId, NotificationType type, String message) {
+        Notification notification = new Notification();
+        notification.setRecipientUserId(recipientUserId);
+        notification.setTournamentId(tournamentId);
+        notification.setBoutId(boutId);
+        notification.setType(type);
+        notification.setMessage(message);
+
+        NotificationDTO dto = toDto(notificationRepository.save(notification));
+
+        // Push via WebSocket
+        messagingTemplate.convertAndSendToUser(
+                recipientUserId.toString(), USER_QUEUE_DESTINATION, dto);
+
+        log.info("Notification sent to user {}: {} ({})", recipientUserId, message, type);
+        return dto;
+    }
 }
