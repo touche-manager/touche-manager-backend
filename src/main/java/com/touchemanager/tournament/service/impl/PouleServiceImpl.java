@@ -584,7 +584,7 @@ public class PouleServiceImpl implements PouleService {
             return Integer.compare(pRankA, pRankB);
         });
 
-        // ── FinalStanding: final position only (no stats) ────────────────────
+        // ── FinalStanding: final position with combined stats ────────────────
         List<TournamentResultResponse.FinalStanding> standings = new ArrayList<>();
         for (int i = 0; i < sorted.size(); i++) {
             StandingData s = sorted.get(i);
@@ -593,7 +593,10 @@ public class PouleServiceImpl implements PouleService {
             standings.add(new TournamentResultResponse.FinalStanding(
                     rank, s.athlete.getId(),
                     s.athlete.getFirstName() + " " + s.athlete.getLastName(),
-                    s.athlete.getClub()));
+                    s.athlete.getClub(),
+                    s.bouts, s.victories, s.defeats,
+                    s.touchesScored, s.touchesReceived,
+                    s.touchesScored - s.touchesReceived));
         }
 
         // ── Participants list (ordered by poule standings = series number) ────
@@ -797,10 +800,12 @@ public class PouleServiceImpl implements PouleService {
                     .map(b -> new TournamentResultResponse.BracketData.BracketBout(
                             b.getId(),
                             b.getBracketPosition() != null ? b.getBracketPosition() : 0,
-                            b.getAthleteLeft().getFirstName() + " " + b.getAthleteLeft().getLastName(),
+                            b.getAthleteLeft() != null
+                                    ? b.getAthleteLeft().getFirstName() + " " + b.getAthleteLeft().getLastName()
+                                    : "?",
                             b.getAthleteRight() != null
                                     ? b.getAthleteRight().getFirstName() + " " + b.getAthleteRight().getLastName()
-                                    : "BYE",
+                                    : null,   // null = BYE slot — do NOT send "BYE" string
                             b.getScoreLeft(),
                             b.getScoreRight(),
                             b.getWinner() != null

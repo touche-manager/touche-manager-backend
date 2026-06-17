@@ -43,14 +43,19 @@ public record TournamentResultResponse(
     ) {}
 
     /**
-     * Final tournament standing — position only, no combat stats.
-     * Stats belong to the poule phase (see PouleClassificationEntry).
+     * Final tournament standing — position with combined stats (poule + elimination bouts).
      */
     public record FinalStanding(
             int rank,
             Long athleteId,
             String fullName,
-            String club
+            String club,
+            int bouts,
+            int victories,
+            int defeats,
+            int touchesScored,
+            int touchesReceived,
+            int indicator
     ) {}
 
     /**
