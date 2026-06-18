@@ -1,6 +1,7 @@
 package com.touchemanager.athlete.dto;
 
 import com.touchemanager.athlete.entity.DocumentType;
+import com.touchemanager.athlete.entity.DocumentValidationStatus;
 import java.time.LocalDateTime;
 
 public record AthleteDocumentResponse(
@@ -9,5 +10,7 @@ public record AthleteDocumentResponse(
         String contentType,
         DocumentType documentType,
         String description,
-        LocalDateTime uploadDate
+        LocalDateTime uploadDate,
+        DocumentValidationStatus validationStatus,
+        String reviewNotes
 ) {}

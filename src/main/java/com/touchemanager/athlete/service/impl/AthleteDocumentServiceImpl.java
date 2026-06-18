@@ -168,7 +168,9 @@ public class AthleteDocumentServiceImpl implements AthleteDocumentService {
                 document.getContentType(),
                 document.getDocumentType(),
                 document.getDescription(),
-                document.getUploadDate()
+                document.getUploadDate(),
+                document.getValidationStatus(),
+                document.getReviewNotes()
         );
     }
 }

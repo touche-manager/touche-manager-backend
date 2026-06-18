@@ -18,6 +18,10 @@ import com.touchemanager.tournament.entity.Tournament;
 import com.touchemanager.tournament.repository.EnrollmentRepository;
 import com.touchemanager.tournament.repository.TournamentRepository;
 import com.touchemanager.tournament.service.OrganizerTournamentService;
+import com.touchemanager.notification.service.NotificationService;
+import com.touchemanager.notification.entity.NotificationType;
+import com.touchemanager.athlete.entity.DocumentValidationStatus;
+import com.touchemanager.athlete.entity.DocumentType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,7 @@ public class OrganizerTournamentServiceImpl implements OrganizerTournamentServic
     private final EnrollmentRepository enrollmentRepository;
     private final AthleteDocumentRepository athleteDocumentRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -129,6 +134,23 @@ public class OrganizerTournamentServiceImpl implements OrganizerTournamentServic
         document.setValidationStatus(request.getValidationStatus());
         document.setReviewNotes(request.getReviewNotes());
         athleteDocumentRepository.save(document);
+
+        // Notify athlete if document was REJECTED
+        if (request.getValidationStatus() == DocumentValidationStatus.REJECTED) {
+            Long athleteUserId = document.getAthlete().getUser().getId();
+            String docLabel = document.getDocumentType() == DocumentType.MEDICAL_CLEARANCE
+                    ? "Apto Médico" : "Comprobante de Pago";
+            String reason = (request.getReviewNotes() != null && !request.getReviewNotes().isBlank())
+                    ? ": " + request.getReviewNotes()
+                    : ".";
+            notificationService.sendNotification(
+                    athleteUserId,
+                    null,
+                    null,
+                    NotificationType.DOCUMENT_REJECTED,
+                    String.format("Tu %s fue rechazado%s Actualizalo en tu perfil.", docLabel, reason)
+            );
+        }
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
