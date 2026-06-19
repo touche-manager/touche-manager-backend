@@ -11,13 +11,13 @@ import com.touchemanager.notification.entity.Notification;
 import com.touchemanager.notification.entity.NotificationType;
 import com.touchemanager.notification.repository.NotificationRepository;
 import com.touchemanager.notification.service.NotificationService;
+import com.touchemanager.notification.sse.NotificationSseEmitterRegistry;
 import com.touchemanager.shared.exception.BoutNotFoundException;
 import com.touchemanager.shared.exception.NotificationNotFoundException;
 import com.touchemanager.shared.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +29,11 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);
-    private static final String USER_QUEUE_DESTINATION = "/queue/notifications";
 
     private final NotificationRepository notificationRepository;
     private final BoutRepository boutRepository;
     private final UserRepository userRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationSseEmitterRegistry sseEmitterRegistry;
 
     @Override
     @Transactional
@@ -118,9 +117,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         NotificationDTO dto = toDto(notificationRepository.save(notification));
 
-        // Push to the athlete's personal queue: /user/{userId}/queue/notifications
-        messagingTemplate.convertAndSendToUser(
-                recipient.getUser().getId().toString(), USER_QUEUE_DESTINATION, dto);
+        // Push via SSE if the user has the app open
+        sseEmitterRegistry.send(recipient.getUser().getId(), dto);
 
         return dto;
     }
@@ -154,9 +152,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         NotificationDTO dto = toDto(notificationRepository.save(notification));
 
-        // Push via WebSocket
-        messagingTemplate.convertAndSendToUser(
-                recipientUserId.toString(), USER_QUEUE_DESTINATION, dto);
+        // Push via SSE if the user has the app open; notification is persisted in DB regardless
+        sseEmitterRegistry.send(recipientUserId, dto);
+        // TODO: FCM push here for when the app is closed (PWA support)
 
         log.info("Notification sent to user {}: {} ({})", recipientUserId, message, type);
         return dto;
