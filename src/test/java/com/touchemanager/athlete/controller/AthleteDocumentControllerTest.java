@@ -3,6 +3,7 @@ package com.touchemanager.athlete.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.touchemanager.athlete.dto.AthleteDocumentResponse;
 import com.touchemanager.athlete.entity.DocumentType;
+import com.touchemanager.athlete.entity.DocumentValidationStatus;
 import com.touchemanager.athlete.service.AthleteDocumentService;
 import com.touchemanager.auth.service.JwtService;
 import com.touchemanager.auth.service.impl.UserDetailsServiceImpl;
@@ -66,7 +67,9 @@ class AthleteDocumentControllerTest {
                 "application/pdf",
                 DocumentType.MEDICAL_CLEARANCE,
                 "Test Desc",
-                LocalDateTime.of(2026, 5, 27, 12, 0)
+                LocalDateTime.of(2026, 5, 27, 12, 0),
+                DocumentValidationStatus.PENDING,
+                "Apto Médico 2026.pdf"
         );
     }
 
