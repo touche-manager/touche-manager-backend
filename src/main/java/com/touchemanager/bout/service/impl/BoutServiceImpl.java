@@ -191,7 +191,7 @@ public class BoutServiceImpl implements BoutService {
 
         int scoreDelta = resolveScoreDelta(request.getEventType());
 
-        // Create event
+        // Create event — side always refers to the fencer who performed the action or received the card
         BoutEvent event = new BoutEvent();
         event.setBout(bout);
         event.setSide(request.getSide());
@@ -201,11 +201,24 @@ public class BoutServiceImpl implements BoutService {
         event.setRefereeEmail(email);
         boutEventRepository.save(event);
 
-        // Update score on the scoring side
-        if (request.getSide() == EventSide.LEFT) {
-            bout.setScoreLeft(bout.getScoreLeft() + scoreDelta);
+        // Determine which side's score is affected:
+        //   RED_CARD  → point to the OPPONENT of the card receiver
+        //   TOUCHE    → point to the fencer on request.getSide()
+        //   SCORE_CORRECTION → subtract 1 from request.getSide() (min 0)
+        //   YELLOW_CARD → no score change (delta = 0)
+        EventSide scoringSide;
+        if (request.getEventType() == EventType.RED_CARD) {
+            scoringSide = request.getSide() == EventSide.LEFT ? EventSide.RIGHT : EventSide.LEFT;
         } else {
-            bout.setScoreRight(bout.getScoreRight() + scoreDelta);
+            scoringSide = request.getSide();
+        }
+
+        if (scoreDelta != 0) {
+            if (scoringSide == EventSide.LEFT) {
+                bout.setScoreLeft(Math.max(0, bout.getScoreLeft() + scoreDelta));
+            } else {
+                bout.setScoreRight(Math.max(0, bout.getScoreRight() + scoreDelta));
+            }
         }
 
         // Check if target score is reached — auto-finish
@@ -550,8 +563,9 @@ public class BoutServiceImpl implements BoutService {
 
     private int resolveScoreDelta(EventType eventType) {
         return switch (eventType) {
-            case TOUCHE, PENALTY -> 1;
-            case CARD -> 0;  // Yellow card — no points; red card should be handled as PENALTY
+            case TOUCHE, RED_CARD -> 1;      // RED_CARD gives +1 to the opponent (side inversion handled in recordEvent)
+            case SCORE_CORRECTION -> -1;     // remove a point from that fencer (min 0 enforced in recordEvent)
+            case YELLOW_CARD -> 0;           // warning only — no score change
         };
     }
 
