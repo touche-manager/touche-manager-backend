@@ -221,12 +221,7 @@ public class BoutServiceImpl implements BoutService {
             }
         }
 
-        // Check if target score is reached — auto-finish
-        int target = touchesTarget(bout.getFormat());
-        if (bout.getScoreLeft() >= target || bout.getScoreRight() >= target) {
-            declareWinner(bout);
-            afterBoutFinished(bout);
-        }
+
 
         Bout saved = boutRepository.save(bout);
         publishLiveUpdate(saved);
