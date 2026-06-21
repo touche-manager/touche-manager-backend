@@ -241,7 +241,8 @@ public class PouleServiceImpl implements PouleService {
     @Transactional(readOnly = true)
     public List<PouleResponse> getRefereePoules(String refereeEmail, Long tournamentId) {
         User referee = getUserByEmail(refereeEmail);
-        assertRefereeAccepted(refereeEmail, tournamentId);
+        // Return only poules the referee is explicitly assigned to.
+        // No acceptance check here: if not yet accepted they simply see an empty list.
         return pouleRepository.findByRefereeIdAndTournamentId(referee.getId(), tournamentId)
                 .stream().map(this::toPouleResponse).collect(Collectors.toList());
     }
