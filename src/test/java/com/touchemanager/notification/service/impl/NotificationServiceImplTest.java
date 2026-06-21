@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.touchemanager.notification.sse.NotificationSseEmitterRegistry;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -45,7 +45,7 @@ class NotificationServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
-    private SimpMessagingTemplate messagingTemplate;
+    private NotificationSseEmitterRegistry sseEmitterRegistry;
 
     @InjectMocks
     private NotificationServiceImpl service;
@@ -92,7 +92,7 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    @DisplayName("notifyUpcomingBout persists one notification per athlete and pushes them via WebSocket")
+    @DisplayName("notifyUpcomingBout persists one notification per athlete and pushes them via SSE")
     void notifyUpcomingBout_notifiesBothAthletes() {
         when(boutRepository.findById(5L)).thenReturn(Optional.of(bout));
         when(notificationRepository.save(any(Notification.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -104,8 +104,8 @@ class NotificationServiceImplTest {
         assertThat(sent.get(0).message()).contains("5 minutos").contains("Facundo García").contains("Pista A");
         assertThat(sent.get(1).message()).contains("Carlos Gómez");
 
-        verify(messagingTemplate).convertAndSendToUser(eq("100"), eq("/queue/notifications"), any(NotificationDTO.class));
-        verify(messagingTemplate).convertAndSendToUser(eq("200"), eq("/queue/notifications"), any(NotificationDTO.class));
+        verify(sseEmitterRegistry).send(eq(100L), any(NotificationDTO.class));
+        verify(sseEmitterRegistry).send(eq(200L), any(NotificationDTO.class));
     }
 
     @Test
