@@ -27,6 +27,7 @@ import com.touchemanager.tournament.repository.TournamentRepository;
 import com.touchemanager.tournament.service.PouleService;
 import com.touchemanager.notification.service.NotificationService;
 import com.touchemanager.notification.entity.NotificationType;
+import com.touchemanager.tournament.sse.TournamentSseRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,7 @@ public class PouleServiceImpl implements PouleService {
     private final RefereeApplicationRepository refereeApplicationRepository;
     private final BoutService boutService;
     private final NotificationService notificationService;
+    private final TournamentSseRegistry tournamentSseRegistry;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Poule Generation
@@ -111,6 +113,8 @@ public class PouleServiceImpl implements PouleService {
         // Transition tournament phase
         tournament.setPhase(TournamentPhase.POULES_IN_PROGRESS);
         tournamentRepository.save(tournament);
+        // Broadcast to organizer SSE subscribers
+        tournamentSseRegistry.broadcast(tournament.getId());
 
         return poules.stream().map(this::toPouleResponse).collect(Collectors.toList());
     }
@@ -463,6 +467,7 @@ public class PouleServiceImpl implements PouleService {
         // Re-fetch all bouts to include any newly created next-round bouts
         List<Bout> allBouts = boutRepository
                 .findByTournamentIdAndPouleIsNullOrderByEliminationRoundAscBracketPositionAsc(tournamentId);
+        tournamentSseRegistry.broadcast(tournamentId);
         return buildBracketResponse(tournament, allBouts);
     }
 
@@ -1016,6 +1021,7 @@ public class PouleServiceImpl implements PouleService {
             }
         });
 
+        tournamentSseRegistry.broadcast(poule.getTournament().getId());
         return toPouleResponse(poule);
     }
 

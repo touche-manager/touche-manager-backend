@@ -7,14 +7,17 @@ import com.touchemanager.tournament.dto.PouleResponse;
 import com.touchemanager.tournament.dto.PouleStandingEntry;
 import com.touchemanager.tournament.dto.TournamentResultResponse;
 import com.touchemanager.tournament.service.PouleService;
+import com.touchemanager.tournament.sse.TournamentSseRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -24,6 +27,7 @@ import java.util.List;
 public class PouleController {
 
     private final PouleService pouleService;
+    private final TournamentSseRegistry tournamentSseRegistry;
 
     // ── Organizer: generate poules ───────────────────────────────────────────
 
@@ -150,5 +154,14 @@ public class PouleController {
             @PathVariable Long tournamentId) {
         return new ApiResponse<>(true, "Resultados del torneo obtenidos",
                 pouleService.getTournamentResults(tournamentId));
+    }
+
+    // ── Live: SSE stream for organizer view ──────────────────────────────────
+
+    @GetMapping(value = "/api/tournaments/{tournamentId}/live", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN', 'REFEREE')")
+    @Operation(summary = "SSE stream: broadcasts \"refresh\" events whenever tournament data changes")
+    public SseEmitter streamTournamentUpdates(@PathVariable Long tournamentId) {
+        return tournamentSseRegistry.subscribe(tournamentId);
     }
 }

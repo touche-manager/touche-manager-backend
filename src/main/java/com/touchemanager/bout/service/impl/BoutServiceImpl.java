@@ -38,6 +38,7 @@ import com.touchemanager.tournament.entity.TournamentPhase;
 import com.touchemanager.tournament.repository.EnrollmentRepository;
 import com.touchemanager.tournament.repository.PouleRepository;
 import com.touchemanager.tournament.repository.TournamentRepository;
+import com.touchemanager.tournament.sse.TournamentSseRegistry;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +69,7 @@ public class BoutServiceImpl implements BoutService {
     private final PouleRepository pouleRepository;
     private final NotificationService notificationService;
     private final BoutSseEmitterRegistry sseEmitterRegistry;
+    private final TournamentSseRegistry tournamentSseRegistry;
 
     @Override
     @Transactional(readOnly = true)
@@ -189,6 +191,25 @@ public class BoutServiceImpl implements BoutService {
             throw new IllegalArgumentException("Bout is not in progress");
         }
 
+        // ── Score limit guard ──────────────────────────────────────────────────
+        if (request.getEventType() == EventType.TOUCHE) {
+            // Fencer scoring: their own score must be below the limit
+            int limit = touchesTarget(bout.getFormat());
+            int currentScore = request.getSide() == EventSide.LEFT ? bout.getScoreLeft() : bout.getScoreRight();
+            if (currentScore >= limit) {
+                throw new IllegalArgumentException(
+                    "Límite de toques alcanzado: no se pueden sumar más de " + limit + " toques en este formato");
+            }
+        } else if (request.getEventType() == EventType.RED_CARD) {
+            // Red card: point goes to the OPPONENT — check the opponent's score
+            int limit = touchesTarget(bout.getFormat());
+            int opponentScore = request.getSide() == EventSide.LEFT ? bout.getScoreRight() : bout.getScoreLeft();
+            if (opponentScore >= limit) {
+                throw new IllegalArgumentException(
+                    "Límite de toques alcanzado: el adversario ya tiene el máximo de toques permitidos");
+            }
+        }
+
         int scoreDelta = resolveScoreDelta(request.getEventType());
 
         // Create event — side always refers to the fencer who performed the action or received the card
@@ -201,13 +222,16 @@ public class BoutServiceImpl implements BoutService {
         event.setRefereeEmail(email);
         boutEventRepository.save(event);
 
-        // Determine which side's score is affected:
-        //   RED_CARD  → point to the OPPONENT of the card receiver
-        //   TOUCHE    → point to the fencer on request.getSide()
-        //   SCORE_CORRECTION → subtract 1 from request.getSide() (min 0)
-        //   YELLOW_CARD → no score change (delta = 0)
+        // ── Determine which side's score is affected ──────────────────────────
+        // RED_CARD           → +1 to the OPPONENT
+        // RED_CARD_REMOVAL   → -1 from the OPPONENT (reverses the red card point)
+        // TOUCHE             → +1 to the fencer on request.getSide()
+        // SCORE_CORRECTION   → -1 from request.getSide() (min 0)
+        // YELLOW_CARD / YELLOW_CARD_REMOVAL → no score change (delta = 0)
         EventSide scoringSide;
-        if (request.getEventType() == EventType.RED_CARD) {
+        if (request.getEventType() == EventType.RED_CARD
+                || request.getEventType() == EventType.RED_CARD_REMOVAL) {
+            // Both RED_CARD and RED_CARD_REMOVAL affect the opponent's score
             scoringSide = request.getSide() == EventSide.LEFT ? EventSide.RIGHT : EventSide.LEFT;
         } else {
             scoringSide = request.getSide();
@@ -220,8 +244,6 @@ public class BoutServiceImpl implements BoutService {
                 bout.setScoreRight(Math.max(0, bout.getScoreRight() + scoreDelta));
             }
         }
-
-
 
         Bout saved = boutRepository.save(bout);
         publishLiveUpdate(saved);
@@ -357,6 +379,11 @@ public class BoutServiceImpl implements BoutService {
         // Tarea 2: Advance elimination winner to next round
         if (bout.getFormat() == BoutFormat.ELIMINATION && bout.getEliminationRound() != null) {
             advanceEliminationWinner(bout);
+        }
+
+        // Notify organizer SSE subscribers that tournament data changed
+        if (bout.getTournament() != null) {
+            tournamentSseRegistry.broadcast(bout.getTournament().getId());
         }
     }
 
@@ -558,9 +585,10 @@ public class BoutServiceImpl implements BoutService {
 
     private int resolveScoreDelta(EventType eventType) {
         return switch (eventType) {
-            case TOUCHE, RED_CARD -> 1;      // RED_CARD gives +1 to the opponent (side inversion handled in recordEvent)
-            case SCORE_CORRECTION -> -1;     // remove a point from that fencer (min 0 enforced in recordEvent)
-            case YELLOW_CARD -> 0;           // warning only — no score change
+            case TOUCHE, RED_CARD -> 1;           // RED_CARD gives +1 to the opponent (side inversion handled above)
+            case SCORE_CORRECTION -> -1;          // remove a point from that fencer (min 0 enforced above)
+            case RED_CARD_REMOVAL -> -1;          // remove the +1 the opponent got from the red card
+            case YELLOW_CARD, YELLOW_CARD_REMOVAL -> 0; // warnings — no score change
         };
     }
 
