@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 "/api/tournaments/public",
                                 "/api/bouts/*/live",
                                 "/api/rankings/**",
+                                "/api/payments/webhook/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",

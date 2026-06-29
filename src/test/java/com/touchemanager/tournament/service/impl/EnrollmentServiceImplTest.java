@@ -17,6 +17,7 @@ import com.touchemanager.tournament.entity.Tournament;
 import com.touchemanager.tournament.entity.Weapon;
 import com.touchemanager.tournament.repository.EnrollmentRepository;
 import com.touchemanager.tournament.repository.TournamentRepository;
+import com.touchemanager.tournament.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +48,8 @@ class EnrollmentServiceImplTest {
     private AthleteDocumentRepository athleteDocumentRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private PaymentService paymentService;
 
     @InjectMocks
     private EnrollmentServiceImpl enrollmentService;
@@ -60,6 +63,12 @@ class EnrollmentServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(paymentService.createPaymentLink(any(Enrollment.class)))
+                .thenAnswer(invocation -> {
+                    Enrollment e = invocation.getArgument(0);
+                    return "/athlete/enrollments/pay?id=" + e.getId();
+                });
+
         testUser = new User();
         testUser.setId(1L);
         testUser.setEmail(testEmail);
@@ -401,5 +410,23 @@ class EnrollmentServiceImplTest {
 
         assertTrue(exception.getMessage().contains("Acceso denegado"));
         verify(enrollmentRepository, never()).save(any(Enrollment.class));
+    }
+
+    @Test
+    void getPaymentLink_Success() {
+        Long enrollmentId = 555L;
+        Enrollment enrollment = new Enrollment();
+        enrollment.setId(enrollmentId);
+        enrollment.setAthlete(testAthlete);
+
+        when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
+        when(athleteRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testAthlete));
+        when(enrollmentRepository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
+        when(paymentService.createPaymentLink(enrollment)).thenReturn("https://www.mercadopago.com/checkout/123");
+
+        String link = enrollmentService.getPaymentLink(testEmail, enrollmentId);
+
+        assertEquals("https://www.mercadopago.com/checkout/123", link);
+        verify(paymentService).createPaymentLink(enrollment);
     }
 }

@@ -15,6 +15,7 @@ import com.touchemanager.tournament.entity.Tournament;
 import com.touchemanager.tournament.repository.EnrollmentRepository;
 import com.touchemanager.tournament.repository.TournamentRepository;
 import com.touchemanager.tournament.service.EnrollmentService;
+import com.touchemanager.tournament.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final AthleteRepository athleteRepository;
     private final AthleteDocumentRepository athleteDocumentRepository;
     private final UserRepository userRepository;
+    private final PaymentService paymentService;
 
     @Override
     @Transactional
@@ -180,6 +182,21 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         return mapToResponse(saved);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public String getPaymentLink(String email, Long enrollmentId) {
+        Athlete athlete = getAthleteByEmail(email);
+
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Inscripción no encontrada con ID: " + enrollmentId));
+
+        if (!enrollment.getAthlete().getId().equals(athlete.getId())) {
+            throw new IllegalArgumentException("Acceso denegado: esta inscripción no pertenece a tu perfil.");
+        }
+
+        return paymentService.createPaymentLink(enrollment);
+    }
+
     private Athlete getAthleteByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
@@ -188,7 +205,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     private EnrollmentResponse mapToResponse(Enrollment enrollment) {
-        String paymentLink = "/athlete/enrollments/pay?id=" + enrollment.getId();
+        String paymentLink = paymentService.createPaymentLink(enrollment);
         return new EnrollmentResponse(
                 enrollment.getId(),
                 enrollment.getAthlete().getId(),
