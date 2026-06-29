@@ -7,4 +7,5 @@ public interface EnrollmentService {
     EnrollmentResponse enroll(String email, EnrollmentRequest request);
     EnrollmentResponse confirmPayment(String email, Long enrollmentId, String paymentId);
     EnrollmentResponse cancelEnrollment(String email, Long enrollmentId);
+    String getPaymentLink(String email, Long enrollmentId);
 }

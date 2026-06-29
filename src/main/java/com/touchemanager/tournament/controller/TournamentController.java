@@ -91,4 +91,13 @@ public class TournamentController {
         EnrollmentResponse response = enrollmentService.cancelEnrollment(email, enrollmentId);
         return new ApiResponse<>(true, "Enrollment cancelled successfully", response);
     }
+
+    @GetMapping("/enrollments/{enrollmentId}/payment-link")
+    @Operation(summary = "Get the payment link (Mercado Pago or simulator) for an existing pending enrollment")
+    public ApiResponse<java.util.Map<String, String>> getPaymentLink(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long enrollmentId) {
+        String paymentLink = enrollmentService.getPaymentLink(email, enrollmentId);
+        return new ApiResponse<>(true, "Payment link retrieved successfully", java.util.Map.of("paymentLink", paymentLink));
+    }
 }
