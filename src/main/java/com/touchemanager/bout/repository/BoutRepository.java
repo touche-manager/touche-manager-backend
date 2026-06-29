@@ -44,4 +44,7 @@ public interface BoutRepository extends JpaRepository<Bout, Long> {
            "WHERE b.tournament.id = :tournamentId AND (pr.id = :refereeId OR br.id = :refereeId) " +
            "ORDER BY b.id ASC")
     List<Bout> findAssignedBouts(@Param("tournamentId") Long tournamentId, @Param("refereeId") Long refereeId);
+
+    /** Used by the public spectator endpoint to list all in-progress bouts */
+    List<Bout> findByStatusOrderByStartedAtDesc(BoutStatus status);
 }

@@ -26,6 +26,7 @@ public record BoutResponse(
         int maxPeriods,
         int touchesTarget,
         int elapsedSeconds,
+        boolean timerPaused,
         Long winnerId,
         EliminationRound eliminationRound,
         Integer bracketPosition,
@@ -38,6 +39,7 @@ public record BoutResponse(
 
     public record AthleteSummary(
             Long id,
+            Long userId,
             String firstName,
             String lastName,
             String club

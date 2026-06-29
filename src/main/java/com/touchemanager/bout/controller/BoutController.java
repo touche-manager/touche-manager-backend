@@ -3,6 +3,7 @@ package com.touchemanager.bout.controller;
 import com.touchemanager.bout.dto.BoutEventRequest;
 import com.touchemanager.bout.dto.BoutRequest;
 import com.touchemanager.bout.dto.BoutResponse;
+import com.touchemanager.bout.dto.LiveBoutSummary;
 import com.touchemanager.bout.dto.ElapsedTimeRequest;
 import com.touchemanager.bout.dto.PisteRequest;
 import com.touchemanager.bout.dto.TournamentStandingsResponse;
@@ -37,6 +38,13 @@ public class BoutController {
     public ApiResponse<List<OrganizerTournamentResponse>> getAllTournaments() {
         return new ApiResponse<>(true, "Tournaments retrieved successfully",
                 boutService.getAllTournaments());
+    }
+
+    @GetMapping("/live")
+    @Operation(summary = "List all currently in-progress bouts — public endpoint for spectators")
+    public ApiResponse<List<LiveBoutSummary>> getLiveBouts() {
+        return new ApiResponse<>(true, "Asaltos en vivo obtenidos correctamente",
+                boutService.getLiveBouts());
     }
 
     @GetMapping("/tournament/{tournamentId}")
@@ -95,13 +103,13 @@ public class BoutController {
 
     @PatchMapping("/{boutId}/time")
     @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
-    @Operation(summary = "Update elapsed time for an active bout (sent periodically from frontend timer)")
+    @Operation(summary = "Update elapsed time and timer state for an active bout (sent on pause/resume)")
     public ApiResponse<BoutResponse> updateElapsedTime(
             @AuthenticationPrincipal String email,
             @PathVariable Long boutId,
             @Valid @RequestBody ElapsedTimeRequest request) {
         return new ApiResponse<>(true, "Elapsed time updated successfully",
-                boutService.updateElapsedTime(email, boutId, request.getElapsedSeconds()));
+                boutService.updateTimerState(email, boutId, request.getElapsedSeconds(), request.isTimerPaused(), request.getCurrentPeriod()));
     }
 
     @PatchMapping("/{boutId}/piste")

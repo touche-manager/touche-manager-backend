@@ -9,6 +9,7 @@ import com.touchemanager.bout.dto.BoutEventResponse;
 import com.touchemanager.bout.dto.BoutLiveUpdate;
 import com.touchemanager.bout.dto.BoutRequest;
 import com.touchemanager.bout.dto.BoutResponse;
+import com.touchemanager.bout.dto.LiveBoutSummary;
 import com.touchemanager.bout.dto.TournamentStandingsResponse;
 import com.touchemanager.bout.entity.Bout;
 import com.touchemanager.bout.entity.BoutEvent;
@@ -179,6 +180,10 @@ public class BoutServiceImpl implements BoutService {
         }
 
         publishLiveUpdate(saved);
+        // Notify tournament SSE subscribers so spectator poule tables update instantly
+        if (saved.getTournament() != null) {
+            tournamentSseRegistry.broadcast(saved.getTournament().getId());
+        }
         return toResponse(saved);
     }
 
@@ -245,6 +250,11 @@ public class BoutServiceImpl implements BoutService {
             }
         }
 
+        // Recording any event always pauses the clock on the referee's side.
+        // Set timerPaused=true here to avoid the race condition where this SSE
+        // fires before the concurrent PATCH /time call has updated the DB.
+        bout.setTimerPaused(true);
+
         Bout saved = boutRepository.save(bout);
         publishLiveUpdate(saved);
         return toResponse(saved);
@@ -260,6 +270,25 @@ public class BoutServiceImpl implements BoutService {
         }
 
         bout.setElapsedSeconds(elapsedSeconds);
+        Bout saved = boutRepository.save(bout);
+        publishLiveUpdate(saved);
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public BoutResponse updateTimerState(String email, Long boutId, int elapsedSeconds, boolean timerPaused, Integer currentPeriod) {
+        Bout bout = getBout(boutId);
+
+        if (bout.getStatus() != BoutStatus.IN_PROGRESS) {
+            throw new IllegalArgumentException("Bout is not in progress");
+        }
+
+        bout.setElapsedSeconds(elapsedSeconds);
+        bout.setTimerPaused(timerPaused);
+        if (currentPeriod != null) {
+            bout.setCurrentPeriod(currentPeriod);
+        }
         Bout saved = boutRepository.save(bout);
         publishLiveUpdate(saved);
         return toResponse(saved);
@@ -311,6 +340,7 @@ public class BoutServiceImpl implements BoutService {
         }
 
         bout.setPriority(side);
+        bout.setTimerPaused(true);
         log.info("Priority assigned to {} in bout {}", side, boutId);
         Bout saved = boutRepository.save(bout);
         publishLiveUpdate(saved);
@@ -353,7 +383,8 @@ public class BoutServiceImpl implements BoutService {
                 bout.getElapsedSeconds(),
                 bout.getCurrentPeriod(),
                 bout.getPiste(),
-                bout.getWinner() != null ? fullName(bout.getWinner()) : null
+                bout.getWinner() != null ? fullName(bout.getWinner()) : null,
+                bout.getStatus() == BoutStatus.IN_PROGRESS && !bout.isTimerPaused()
         );
     }
 
@@ -640,6 +671,7 @@ public class BoutServiceImpl implements BoutService {
                 maxPeriods(bout.getFormat()),
                 touchesTarget(bout.getFormat()),
                 bout.getElapsedSeconds(),
+                bout.isTimerPaused(),
                 bout.getWinner() != null ? bout.getWinner().getId() : null,
                 bout.getEliminationRound(),
                 bout.getBracketPosition(),
@@ -655,6 +687,7 @@ public class BoutServiceImpl implements BoutService {
         if (athlete == null) return null;
         return new BoutResponse.AthleteSummary(
                 athlete.getId(),
+                athlete.getUser().getId(),
                 athlete.getFirstName(),
                 athlete.getLastName(),
                 athlete.getClub()
@@ -722,5 +755,32 @@ public class BoutServiceImpl implements BoutService {
         Bout bout = getBout(boutId);
         bout.getReferees().removeIf(r -> r.getId().equals(refereeUserId));
         return toResponse(boutRepository.save(bout));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LiveBoutSummary> getLiveBouts() {
+        return boutRepository.findByStatusOrderByStartedAtDesc(BoutStatus.IN_PROGRESS)
+                .stream()
+                .map(b -> new LiveBoutSummary(
+                        b.getId(),
+                        b.getTournament().getId(),
+                        b.getTournament().getName(),
+                        b.getPiste(),
+                        b.getStatus(),
+                        b.getAthleteLeft() != null
+                                ? b.getAthleteLeft().getFirstName() + " " + b.getAthleteLeft().getLastName()
+                                : "BYE",
+                        b.getAthleteRight() != null
+                                ? b.getAthleteRight().getFirstName() + " " + b.getAthleteRight().getLastName()
+                                : "BYE",
+                        b.getScoreLeft(),
+                        b.getScoreRight(),
+                        b.getElapsedSeconds(),
+                        b.getPoule() != null ? b.getPoule().getId() : null,
+                        b.getPoule() != null ? b.getPoule().getNumber() : null,
+                        b.getEliminationRound()
+                ))
+                .collect(Collectors.toList());
     }
 }

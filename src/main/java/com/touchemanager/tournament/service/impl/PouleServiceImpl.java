@@ -1108,6 +1108,7 @@ public class PouleServiceImpl implements PouleService {
                 maxPeriods(bout.getFormat()),
                 touchesTarget(bout.getFormat()),
                 bout.getElapsedSeconds(),
+                bout.isTimerPaused(),
                 bout.getWinner() != null ? bout.getWinner().getId() : null,
                 bout.getEliminationRound(),
                 bout.getBracketPosition(),
@@ -1122,6 +1123,7 @@ public class PouleServiceImpl implements PouleService {
     private BoutResponse.AthleteSummary toAthleteSummary(Athlete a) {
         return new BoutResponse.AthleteSummary(
                 a.getId(),
+                a.getUser().getId(),
                 a.getFirstName(),
                 a.getLastName(),
                 a.getClub()

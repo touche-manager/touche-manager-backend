@@ -4,6 +4,7 @@ import com.touchemanager.bout.dto.BoutEventRequest;
 import com.touchemanager.bout.dto.BoutLiveUpdate;
 import com.touchemanager.bout.dto.BoutRequest;
 import com.touchemanager.bout.dto.BoutResponse;
+import com.touchemanager.bout.dto.LiveBoutSummary;
 import com.touchemanager.bout.dto.TournamentStandingsResponse;
 import com.touchemanager.bout.entity.Bout;
 import com.touchemanager.bout.entity.EventSide;
@@ -23,6 +24,9 @@ public interface BoutService {
     BoutResponse recordEvent(String email, Long boutId, BoutEventRequest request);
 
     BoutResponse updateElapsedTime(String email, Long boutId, int elapsedSeconds);
+
+    /** Update elapsed time AND timer state (paused/running) — broadcasts pause to spectators */
+    BoutResponse updateTimerState(String email, Long boutId, int elapsedSeconds, boolean timerPaused, Integer currentPeriod);
 
     BoutResponse finishBout(String email, Long boutId);
 
@@ -53,4 +57,7 @@ public interface BoutService {
 
     /** Current state of a bout for public live-scoreboard subscribers */
     BoutLiveUpdate getLiveSnapshot(Long boutId);
+
+    /** All currently IN_PROGRESS bouts — public endpoint for spectators */
+    List<LiveBoutSummary> getLiveBouts();
 }

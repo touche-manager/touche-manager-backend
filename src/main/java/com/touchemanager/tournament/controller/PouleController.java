@@ -57,8 +57,7 @@ public class PouleController {
     // ── Common: list poules ──────────────────────────────────────────────────
 
     @GetMapping("/api/tournaments/{tournamentId}/poules")
-    @PreAuthorize("hasAnyRole('REFEREE', 'ORGANIZER', 'ADMIN')")
-    @Operation(summary = "List all poules for a tournament")
+    @Operation(summary = "List all poules for a tournament (public)")
     public ApiResponse<List<PouleResponse>> getPoulesForTournament(
             @PathVariable Long tournamentId) {
         return new ApiResponse<>(true, "Poules obtenidas correctamente",
@@ -66,18 +65,11 @@ public class PouleController {
     }
 
     @GetMapping("/api/poules/{pouleId}")
-    @PreAuthorize("hasAnyRole('REFEREE', 'ORGANIZER', 'ADMIN')")
-    @Operation(summary = "Get full details of a poule including bouts")
+    @Operation(summary = "Get full details of a poule including bouts (public)")
     public ApiResponse<PouleResponse> getPouleDetails(
-            @AuthenticationPrincipal String email,
-            org.springframework.security.core.Authentication authentication,
             @PathVariable Long pouleId) {
-        // Organizers and Admins bypass the acceptance check; referees must be ACCEPTED
-        boolean isRefereeOnly = authentication.getAuthorities().stream()
-                .allMatch(a -> a.getAuthority().equals("ROLE_REFEREE"));
-        String refereeEmail = isRefereeOnly ? email : null;
         return new ApiResponse<>(true, "Poule obtenida correctamente",
-                pouleService.getPouleDetails(refereeEmail, pouleId));
+                pouleService.getPouleDetails(null, pouleId));
     }
 
     // ── Organizer: assign referee to poule ───────────────────────────────────
@@ -129,8 +121,7 @@ public class PouleController {
     // ── Common: standings and bracket ────────────────────────────────────────
 
     @GetMapping("/api/tournaments/{tournamentId}/standings")
-    @PreAuthorize("hasAnyRole('REFEREE', 'ORGANIZER', 'ADMIN')")
-    @Operation(summary = "Get poule standings computed from all finished bouts")
+    @Operation(summary = "Get poule standings computed from all finished bouts (public)")
     public ApiResponse<List<PouleStandingEntry>> getPouleStandings(
             @PathVariable Long tournamentId) {
         return new ApiResponse<>(true, "Clasificacion de poules obtenida",
@@ -138,8 +129,7 @@ public class PouleController {
     }
 
     @GetMapping("/api/tournaments/{tournamentId}/bracket")
-    @PreAuthorize("hasAnyRole('REFEREE', 'ORGANIZER', 'ADMIN', 'ATHLETE')")
-    @Operation(summary = "Get the elimination bracket for a tournament")
+    @Operation(summary = "Get the elimination bracket for a tournament (public)")
     public ApiResponse<EliminationBracketResponse> getEliminationBracket(
             @PathVariable Long tournamentId) {
         return new ApiResponse<>(true, "Bracket de eliminatorias obtenido",
@@ -156,11 +146,10 @@ public class PouleController {
                 pouleService.getTournamentResults(tournamentId));
     }
 
-    // ── Live: SSE stream for organizer view ──────────────────────────────────
+    // ── Live: SSE stream — public for spectators ─────────────────────────────
 
     @GetMapping(value = "/api/tournaments/{tournamentId}/live", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN', 'REFEREE')")
-    @Operation(summary = "SSE stream: broadcasts \"refresh\" events whenever tournament data changes")
+    @Operation(summary = "SSE stream: broadcasts \"refresh\" events whenever tournament data changes (public)")
     public SseEmitter streamTournamentUpdates(@PathVariable Long tournamentId) {
         return tournamentSseRegistry.subscribe(tournamentId);
     }

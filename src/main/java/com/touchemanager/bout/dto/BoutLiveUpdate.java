@@ -13,5 +13,6 @@ public record BoutLiveUpdate(
         int elapsedSeconds,
         int period,
         String piste,
-        String winnerName
+        String winnerName,
+        boolean timerRunning
 ) {}

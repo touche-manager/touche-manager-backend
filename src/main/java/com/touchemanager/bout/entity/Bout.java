@@ -62,6 +62,10 @@ public class Bout {
     @Column(name = "elapsed_seconds", nullable = false)
     private int elapsedSeconds = 0;
 
+    /** True while the referee has the clock stopped (between touches or during card review) */
+    @Column(name = "timer_paused", nullable = false)
+    private boolean timerPaused = false;
+
     @Column(name = "started_at")
     private LocalDateTime startedAt;
 
