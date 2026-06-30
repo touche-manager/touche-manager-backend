@@ -69,4 +69,17 @@ public class PaymentWebhookController {
         // Always return 200 OK to Mercado Pago to acknowledge receipt
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/confirm-from-redirect")
+    @Operation(summary = "Synchronously confirm payment via query param fallback")
+    public ResponseEntity<Void> confirmFromRedirect(@RequestParam("payment_id") String paymentId) {
+        log.info("Manual payment confirmation requested for payment ID: {}", paymentId);
+        try {
+            paymentService.handleWebhook(paymentId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("Error processing manual confirmation for payment ID: {}", paymentId, e);
+            return ResponseEntity.status(500).build();
+        }
+    }
 }
