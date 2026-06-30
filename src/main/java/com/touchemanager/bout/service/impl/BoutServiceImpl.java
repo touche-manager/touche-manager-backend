@@ -720,6 +720,17 @@ public class BoutServiceImpl implements BoutService {
         if (!bout.getReferees().contains(referee)) {
             bout.getReferees().add(referee);
             boutRepository.save(bout);
+
+            // Notify referee of assignment
+            String message = String.format("Fuiste asignado/a como árbitro para el asalto de %s en el torneo '%s'.",
+                    getBoutLabel(bout), bout.getTournament().getName());
+            notificationService.sendNotification(
+                    referee.getId(),
+                    bout.getTournament().getId(),
+                    bout.getId(),
+                    NotificationType.REFEREE_ASSIGNMENT,
+                    message
+            );
         }
         return toResponse(bout);
     }
@@ -753,6 +764,23 @@ public class BoutServiceImpl implements BoutService {
     @Transactional
     public BoutResponse removeRefereeFromEliminationBout(String organizerEmail, Long boutId, Long refereeUserId) {
         Bout bout = getBout(boutId);
+        
+        // Notify before removing
+        bout.getReferees().stream()
+                .filter(r -> r.getId().equals(refereeUserId))
+                .findFirst()
+                .ifPresent(referee -> {
+                    String message = String.format("Fuiste removido/a como árbitro del asalto de %s en el torneo '%s'.",
+                            getBoutLabel(bout), bout.getTournament().getName());
+                    notificationService.sendNotification(
+                            referee.getId(),
+                            bout.getTournament().getId(),
+                            bout.getId(),
+                            NotificationType.REFEREE_ASSIGNMENT,
+                            message
+                    );
+                });
+
         bout.getReferees().removeIf(r -> r.getId().equals(refereeUserId));
         return toResponse(boutRepository.save(bout));
     }
@@ -782,5 +810,22 @@ public class BoutServiceImpl implements BoutService {
                         b.getEliminationRound()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    private String getBoutLabel(Bout bout) {
+        if (bout.getEliminationRound() == null) {
+            return "Eliminatoria";
+        }
+        String roundName = switch (bout.getEliminationRound()) {
+            case ROUND_OF_64 -> "Tabla de 64";
+            case ROUND_OF_32 -> "Tabla de 32";
+            case ROUND_OF_16 -> "Octavos de final";
+            case QUARTERFINAL -> "Cuartos de final";
+            case SEMIFINAL -> "Semifinal";
+            case FINAL -> "Final";
+        };
+        String left = bout.getAthleteLeft() != null ? bout.getAthleteLeft().getLastName() : "A confirmar";
+        String right = bout.getAthleteRight() != null ? bout.getAthleteRight().getLastName() : "A confirmar";
+        return String.format("%s (%s vs %s)", roundName, left, right);
     }
 }
