@@ -60,7 +60,6 @@ public class MercadoPagoServiceImpl implements PaymentService {
                     .backUrls(backUrls)
                     .notificationUrl(notificationUrl)
                     .externalReference(enrollment.getId().toString())
-                    .autoReturn("approved")
                     .build();
 
             PreferenceClient client = new PreferenceClient();
