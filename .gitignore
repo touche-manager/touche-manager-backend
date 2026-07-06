@@ -33,3 +33,6 @@ agent.md
 
 #CLAUDE.md
 CLAUDE.md
+
+# Firebase service account credentials (never commit)
+firebase-service-account.json

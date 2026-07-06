@@ -21,8 +21,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.touchemanager.notification.fcm.FcmService;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +36,21 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
+    // Types that trigger FCM push (app closed / device locked)
+    private static final Set<NotificationType> FCM_PRIORITY_TYPES;
+    static {
+        Set<NotificationType> types = new HashSet<>();
+        types.add(NotificationType.UPCOMING_BOUT);
+        types.add(NotificationType.YOUR_TURN);
+        types.add(NotificationType.NEXT_UP);
+        FCM_PRIORITY_TYPES = Collections.unmodifiableSet(types);
+    }
+
     private final NotificationRepository notificationRepository;
     private final BoutRepository boutRepository;
     private final UserRepository userRepository;
     private final NotificationSseEmitterRegistry sseEmitterRegistry;
+    private final FcmService fcmService;
 
     @Override
     @Transactional
@@ -120,6 +137,15 @@ public class NotificationServiceImpl implements NotificationService {
         // Push via SSE if the user has the app open
         sseEmitterRegistry.send(recipient.getUser().getId(), dto);
 
+        // FCM push: upcoming bout is always high priority
+        fcmService.sendToUser(
+            recipient.getUser().getId(),
+            "Touché Manager",
+            String.format("En %d minutos: combate en %s", minutesAhead, piste),
+            Map.of("type", NotificationType.UPCOMING_BOUT.name(),
+                    "boutId", bout.getId().toString())
+        );
+
         return dto;
     }
 
@@ -154,7 +180,13 @@ public class NotificationServiceImpl implements NotificationService {
 
         // Push via SSE if the user has the app open; notification is persisted in DB regardless
         sseEmitterRegistry.send(recipientUserId, dto);
-        // TODO: FCM push here for when the app is closed (PWA support)
+
+        // FCM push for high-priority events (app closed / device locked)
+        if (FCM_PRIORITY_TYPES.contains(type)) {
+            fcmService.sendToUser(recipientUserId, "Touché Manager", message,
+                    Map.of("type", type.name(),
+                           "tournamentId", tournamentId != null ? tournamentId.toString() : ""));
+        }
 
         log.info("Notification sent to user {}: {} ({})", recipientUserId, message, type);
         return dto;
