@@ -164,12 +164,8 @@ public class OrganizerTournamentServiceImpl implements OrganizerTournamentServic
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
 
-        // ADMIN can manage any tournament; ORGANIZER only their own
-        boolean isAdmin = organizer.getRoles().stream()
-                .anyMatch(r -> r.getName().name().equals("ADMIN"));
-
-        if (!isAdmin && (tournament.getCreatedBy() == null
-                || !tournament.getCreatedBy().getId().equals(organizer.getId()))) {
+        if (tournament.getCreatedBy() == null
+                || !tournament.getCreatedBy().getId().equals(organizer.getId())) {
             throw new TournamentNotOwnedException(tournamentId);
         }
         return tournament;

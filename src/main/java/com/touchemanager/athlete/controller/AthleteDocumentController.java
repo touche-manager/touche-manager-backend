@@ -71,16 +71,16 @@ public class AthleteDocumentController {
     }
 
     @GetMapping("/{athleteId}/documents")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
-    @Operation(summary = "Get all documents of a specific athlete (Organizers/Admins only)")
+    @PreAuthorize("hasRole('ORGANIZER')")
+    @Operation(summary = "Get all documents of a specific athlete (Organizers only)")
     public ApiResponse<List<AthleteDocumentResponse>> getAthleteDocuments(@PathVariable Long athleteId) {
         List<AthleteDocumentResponse> response = athleteDocumentService.getAthleteDocuments(athleteId);
         return new ApiResponse<>(true, "Athlete documents retrieved successfully", response);
     }
 
     @GetMapping("/{athleteId}/documents/{documentId}")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
-    @Operation(summary = "Download a specific document of an athlete (Organizers/Admins only)")
+    @PreAuthorize("hasRole('ORGANIZER')")
+    @Operation(summary = "Download a specific document of an athlete (Organizers only)")
     public ResponseEntity<Resource> downloadAthleteDocument(
             @PathVariable Long athleteId,
             @PathVariable Long documentId) {

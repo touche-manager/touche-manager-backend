@@ -26,7 +26,7 @@ public class OrganizerTournamentController {
     private final OrganizerTournamentService organizerTournamentService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Get all tournaments created by the authenticated organizer")
     public ApiResponse<List<OrganizerTournamentResponse>> getMyTournaments(
             @AuthenticationPrincipal String email) {
@@ -35,7 +35,7 @@ public class OrganizerTournamentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Get a specific tournament owned by the organizer")
     public ApiResponse<OrganizerTournamentResponse> getTournamentById(
             @AuthenticationPrincipal String email,
@@ -46,7 +46,7 @@ public class OrganizerTournamentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Create a new tournament")
     public ApiResponse<OrganizerTournamentResponse> createTournament(
             @AuthenticationPrincipal String email,
@@ -56,7 +56,7 @@ public class OrganizerTournamentController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Update an existing tournament")
     public ApiResponse<OrganizerTournamentResponse> updateTournament(
             @AuthenticationPrincipal String email,
@@ -68,7 +68,7 @@ public class OrganizerTournamentController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Delete a tournament")
     public void deleteTournament(
             @AuthenticationPrincipal String email,
@@ -77,7 +77,7 @@ public class OrganizerTournamentController {
     }
 
     @GetMapping("/{id}/enrollments")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Get all enrollments for a tournament with athlete info and document status")
     public ApiResponse<List<EnrollmentDetailResponse>> getTournamentEnrollments(
             @AuthenticationPrincipal String email,
@@ -87,7 +87,7 @@ public class OrganizerTournamentController {
     }
 
     @PatchMapping("/documents/{documentId}/validate")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Approve or reject an athlete's document")
     public ApiResponse<Void> validateDocument(
             @AuthenticationPrincipal String email,

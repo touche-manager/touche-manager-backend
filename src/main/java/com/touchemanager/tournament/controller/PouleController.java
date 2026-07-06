@@ -33,7 +33,7 @@ public class PouleController {
 
     @PostMapping("/api/organizer/tournaments/{tournamentId}/generate-poules")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Generate poules for a tournament and transition it to POULES_IN_PROGRESS")
     public ApiResponse<List<PouleResponse>> generatePoules(
             @AuthenticationPrincipal String email,
@@ -45,7 +45,7 @@ public class PouleController {
     // ── Organizer: generate elimination bracket ──────────────────────────────
 
     @PostMapping("/api/organizer/tournaments/{tournamentId}/generate-bracket")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Close poules, compute standings and generate the elimination bracket")
     public ApiResponse<EliminationBracketResponse> generateEliminationBracket(
             @AuthenticationPrincipal String email,
@@ -75,7 +75,7 @@ public class PouleController {
     // ── Organizer: assign referee to poule ───────────────────────────────────
 
     @PostMapping("/api/poules/{pouleId}/referees")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Assign a referee to a poule")
     public ApiResponse<PouleResponse> assignRefereeToPoule(
             @AuthenticationPrincipal String email,
@@ -86,7 +86,7 @@ public class PouleController {
     }
 
     @DeleteMapping("/api/poules/{pouleId}/referees/{refereeUserId}")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Remove a referee from a poule")
     public ApiResponse<PouleResponse> removeRefereeFromPoule(
             @AuthenticationPrincipal String email,
@@ -99,7 +99,7 @@ public class PouleController {
     // ── Referee: my poules ───────────────────────────────────────────────────
 
     @GetMapping("/api/poules/my/{tournamentId}")
-    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @PreAuthorize("hasRole('REFEREE')")
     @Operation(summary = "Get poules assigned to the authenticated referee in a tournament")
     public ApiResponse<List<PouleResponse>> getRefereePoules(
             @AuthenticationPrincipal String email,
@@ -109,7 +109,7 @@ public class PouleController {
     }
 
     @PostMapping("/api/poules/{pouleId}/start")
-    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @PreAuthorize("hasRole('REFEREE')")
     @Operation(summary = "Referee starts a poule: transitions from PENDING to IN_PROGRESS and notifies the athletes of the first bout")
     public ApiResponse<PouleResponse> startPoule(
             @AuthenticationPrincipal String email,

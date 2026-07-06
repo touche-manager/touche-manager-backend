@@ -22,7 +22,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping("/api/bouts/{boutId}/notify-upcoming")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'REFEREE', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'REFEREE')")
     @Operation(summary = "Summon the athletes of a bout: notifies them their bout starts in N minutes")
     public ApiResponse<List<NotificationDTO>> notifyUpcomingBout(
             @AuthenticationPrincipal String email,

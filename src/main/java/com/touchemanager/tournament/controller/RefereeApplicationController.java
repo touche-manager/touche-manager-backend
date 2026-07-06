@@ -25,7 +25,7 @@ public class RefereeApplicationController {
 
     @PostMapping("/{tournamentId}")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @PreAuthorize("hasRole('REFEREE')")
     @Operation(summary = "Referee applies to officiate at a tournament")
     public ApiResponse<RefereeApplicationResponse> apply(
             @AuthenticationPrincipal String email,
@@ -35,7 +35,7 @@ public class RefereeApplicationController {
     }
 
     @GetMapping("/my")
-    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @PreAuthorize("hasRole('REFEREE')")
     @Operation(summary = "Get all applications of the authenticated referee")
     public ApiResponse<List<RefereeApplicationResponse>> getMyApplications(
             @AuthenticationPrincipal String email) {
@@ -44,7 +44,7 @@ public class RefereeApplicationController {
     }
 
     @GetMapping("/tournament/{tournamentId}")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Get all referee applications for a tournament")
     public ApiResponse<List<RefereeApplicationResponse>> getApplicationsForTournament(
             @AuthenticationPrincipal String email,
@@ -54,7 +54,7 @@ public class RefereeApplicationController {
     }
 
     @PatchMapping("/{applicationId}/review")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasRole('ORGANIZER')")
     @Operation(summary = "Accept or reject a referee application")
     public ApiResponse<RefereeApplicationResponse> reviewApplication(
             @AuthenticationPrincipal String email,
@@ -66,7 +66,7 @@ public class RefereeApplicationController {
 
     @DeleteMapping("/{applicationId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('REFEREE', 'ADMIN')")
+    @PreAuthorize("hasRole('REFEREE')")
     @Operation(summary = "Cancel own referee application")
     public void cancelApplication(
             @AuthenticationPrincipal String email,
