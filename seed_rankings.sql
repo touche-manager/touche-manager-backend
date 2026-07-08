@@ -11,7 +11,6 @@ BEGIN;
 INSERT INTO roles (name) VALUES ('ATHLETE') ON CONFLICT (name) DO NOTHING;
 INSERT INTO roles (name) VALUES ('REFEREE') ON CONFLICT (name) DO NOTHING;
 INSERT INTO roles (name) VALUES ('ORGANIZER') ON CONFLICT (name) DO NOTHING;
-INSERT INTO roles (name) VALUES ('ADMIN') ON CONFLICT (name) DO NOTHING;
 
 -- ─────────────────────────────────────────
 -- 2. USERS (organizador + atletas)
@@ -146,73 +145,73 @@ ON CONFLICT DO NOTHING;
 -- ─────────────────────────────────────────
 
 -- ── Torneo 301 POULE 1 (201,202,203,204) ──
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order) VALUES
-  (601, 301, 501, 201, 202, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-11-15 09:00:00', '2025-11-15 09:03:00', 201, 1),
-  (602, 301, 501, 203, 204, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-11-15 09:05:00', '2025-11-15 09:08:00', 203, 2),
-  (603, 301, 501, 201, 203, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-11-15 09:10:00', '2025-11-15 09:13:00', 201, 3),
-  (604, 301, 501, 202, 204, 'POULE', 5, 1, 'FINISHED', 1, 180, '2025-11-15 09:15:00', '2025-11-15 09:18:00', 202, 4),
-  (605, 301, 501, 204, 201, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-11-15 09:20:00', '2025-11-15 09:23:00', 201, 5),
-  (606, 301, 501, 202, 203, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-11-15 09:25:00', '2025-11-15 09:28:00', 203, 6)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order, timer_paused) VALUES
+  (601, 301, 501, 201, 202, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-11-15 09:00:00', '2025-11-15 09:03:00', 201, 1, false),
+  (602, 301, 501, 203, 204, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-11-15 09:05:00', '2025-11-15 09:08:00', 203, 2, false),
+  (603, 301, 501, 201, 203, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-11-15 09:10:00', '2025-11-15 09:13:00', 201, 3, false),
+  (604, 301, 501, 202, 204, 'POULE', 5, 1, 'FINISHED', 1, 180, '2025-11-15 09:15:00', '2025-11-15 09:18:00', 202, 4, false),
+  (605, 301, 501, 204, 201, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-11-15 09:20:00', '2025-11-15 09:23:00', 201, 5, false),
+  (606, 301, 501, 202, 203, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-11-15 09:25:00', '2025-11-15 09:28:00', 203, 6, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 301 POULE 2 (205,206,207,208) ──
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order) VALUES
-  (611, 301, 502, 205, 206, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-11-15 09:00:00', '2025-11-15 09:03:00', 205, 1),
-  (612, 301, 502, 207, 208, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-11-15 09:05:00', '2025-11-15 09:08:00', 207, 2),
-  (613, 301, 502, 205, 207, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-11-15 09:10:00', '2025-11-15 09:13:00', 205, 3),
-  (614, 301, 502, 206, 208, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-11-15 09:15:00', '2025-11-15 09:18:00', 208, 4),
-  (615, 301, 502, 208, 205, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-11-15 09:20:00', '2025-11-15 09:23:00', 205, 5),
-  (616, 301, 502, 206, 207, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-11-15 09:25:00', '2025-11-15 09:28:00', 207, 6)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order, timer_paused) VALUES
+  (611, 301, 502, 205, 206, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-11-15 09:00:00', '2025-11-15 09:03:00', 205, 1, false),
+  (612, 301, 502, 207, 208, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-11-15 09:05:00', '2025-11-15 09:08:00', 207, 2, false),
+  (613, 301, 502, 205, 207, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-11-15 09:10:00', '2025-11-15 09:13:00', 205, 3, false),
+  (614, 301, 502, 206, 208, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-11-15 09:15:00', '2025-11-15 09:18:00', 208, 4, false),
+  (615, 301, 502, 208, 205, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-11-15 09:20:00', '2025-11-15 09:23:00', 205, 5, false),
+  (616, 301, 502, 206, 207, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-11-15 09:25:00', '2025-11-15 09:28:00', 207, 6, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 302 POULE única (210,211,212,213) ──
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order) VALUES
-  (650, 302, 510, 210, 211, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-09-20 09:00:00', '2025-09-20 09:03:00', 211, 1),
-  (651, 302, 510, 212, 213, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-09-20 09:05:00', '2025-09-20 09:08:00', 212, 2),
-  (652, 302, 510, 210, 212, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-09-20 09:10:00', '2025-09-20 09:13:00', 212, 3),
-  (653, 302, 510, 211, 213, 'POULE', 5, 1, 'FINISHED', 1, 180, '2025-09-20 09:15:00', '2025-09-20 09:18:00', 211, 4),
-  (654, 302, 510, 213, 210, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-09-20 09:20:00', '2025-09-20 09:23:00', 213, 5),
-  (655, 302, 510, 211, 212, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-09-20 09:25:00', '2025-09-20 09:28:00', 211, 6)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order, timer_paused) VALUES
+  (650, 302, 510, 210, 211, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-09-20 09:00:00', '2025-09-20 09:03:00', 211, 1, false),
+  (651, 302, 510, 212, 213, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-09-20 09:05:00', '2025-09-20 09:08:00', 212, 2, false),
+  (652, 302, 510, 210, 212, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-09-20 09:10:00', '2025-09-20 09:13:00', 212, 3, false),
+  (653, 302, 510, 211, 213, 'POULE', 5, 1, 'FINISHED', 1, 180, '2025-09-20 09:15:00', '2025-09-20 09:18:00', 211, 4, false),
+  (654, 302, 510, 213, 210, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-09-20 09:20:00', '2025-09-20 09:23:00', 213, 5, false),
+  (655, 302, 510, 211, 212, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-09-20 09:25:00', '2025-09-20 09:28:00', 211, 6, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 303 POULE 1 (201,202,203,204) ──
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order) VALUES
-  (801, 303, 520, 201, 202, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-08-10 09:00:00', '2025-08-10 09:03:00', 201, 1),
-  (802, 303, 520, 203, 204, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-08-10 09:05:00', '2025-08-10 09:08:00', 204, 2),
-  (803, 303, 520, 201, 203, 'POULE', 5, 1, 'FINISHED', 1, 180, '2025-08-10 09:10:00', '2025-08-10 09:13:00', 201, 3),
-  (804, 303, 520, 202, 204, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-08-10 09:15:00', '2025-08-10 09:18:00', 204, 4),
-  (805, 303, 520, 204, 201, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-08-10 09:20:00', '2025-08-10 09:23:00', 201, 5),
-  (806, 303, 520, 202, 203, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-08-10 09:25:00', '2025-08-10 09:28:00', 202, 6)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order, timer_paused) VALUES
+  (801, 303, 520, 201, 202, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-08-10 09:00:00', '2025-08-10 09:03:00', 201, 1, false),
+  (802, 303, 520, 203, 204, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-08-10 09:05:00', '2025-08-10 09:08:00', 204, 2, false),
+  (803, 303, 520, 201, 203, 'POULE', 5, 1, 'FINISHED', 1, 180, '2025-08-10 09:10:00', '2025-08-10 09:13:00', 201, 3, false),
+  (804, 303, 520, 202, 204, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-08-10 09:15:00', '2025-08-10 09:18:00', 204, 4, false),
+  (805, 303, 520, 204, 201, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-08-10 09:20:00', '2025-08-10 09:23:00', 201, 5, false),
+  (806, 303, 520, 202, 203, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-08-10 09:25:00', '2025-08-10 09:28:00', 202, 6, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 303 POULE 2 (205,206,207,208) ──
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order) VALUES
-  (811, 303, 521, 205, 206, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-08-10 09:00:00', '2025-08-10 09:03:00', 205, 1),
-  (812, 303, 521, 207, 208, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-08-10 09:05:00', '2025-08-10 09:08:00', 208, 2),
-  (813, 303, 521, 205, 207, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-08-10 09:10:00', '2025-08-10 09:13:00', 205, 3),
-  (814, 303, 521, 206, 208, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-08-10 09:15:00', '2025-08-10 09:18:00', 206, 4),
-  (815, 303, 521, 208, 205, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-08-10 09:20:00', '2025-08-10 09:23:00', 205, 5),
-  (816, 303, 521, 206, 207, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-08-10 09:25:00', '2025-08-10 09:28:00', 207, 6)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order, timer_paused) VALUES
+  (811, 303, 521, 205, 206, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-08-10 09:00:00', '2025-08-10 09:03:00', 205, 1, false),
+  (812, 303, 521, 207, 208, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-08-10 09:05:00', '2025-08-10 09:08:00', 208, 2, false),
+  (813, 303, 521, 205, 207, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-08-10 09:10:00', '2025-08-10 09:13:00', 205, 3, false),
+  (814, 303, 521, 206, 208, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-08-10 09:15:00', '2025-08-10 09:18:00', 206, 4, false),
+  (815, 303, 521, 208, 205, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-08-10 09:20:00', '2025-08-10 09:23:00', 205, 5, false),
+  (816, 303, 521, 206, 207, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-08-10 09:25:00', '2025-08-10 09:28:00', 207, 6, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 304 POULE 1 (201,202,203,204) ──
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order) VALUES
-  (901, 304, 530, 201, 202, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-06-21 09:00:00', '2025-06-21 09:03:00', 202, 1),
-  (902, 304, 530, 203, 204, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-06-21 09:05:00', '2025-06-21 09:08:00', 203, 2),
-  (903, 304, 530, 201, 203, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-06-21 09:10:00', '2025-06-21 09:13:00', 203, 3),
-  (904, 304, 530, 202, 204, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-06-21 09:15:00', '2025-06-21 09:18:00', 202, 4),
-  (905, 304, 530, 204, 201, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-06-21 09:20:00', '2025-06-21 09:23:00', 204, 5),
-  (906, 304, 530, 202, 203, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-06-21 09:25:00', '2025-06-21 09:28:00', 203, 6)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order, timer_paused) VALUES
+  (901, 304, 530, 201, 202, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-06-21 09:00:00', '2025-06-21 09:03:00', 202, 1, false),
+  (902, 304, 530, 203, 204, 'POULE', 5, 4, 'FINISHED', 1, 180, '2025-06-21 09:05:00', '2025-06-21 09:08:00', 203, 2, false),
+  (903, 304, 530, 201, 203, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-06-21 09:10:00', '2025-06-21 09:13:00', 203, 3, false),
+  (904, 304, 530, 202, 204, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-06-21 09:15:00', '2025-06-21 09:18:00', 202, 4, false),
+  (905, 304, 530, 204, 201, 'POULE', 5, 3, 'FINISHED', 1, 180, '2025-06-21 09:20:00', '2025-06-21 09:23:00', 204, 5, false),
+  (906, 304, 530, 202, 203, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-06-21 09:25:00', '2025-06-21 09:28:00', 203, 6, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 304 POULE 2 (205,206,207,208) ──
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order) VALUES
-  (911, 304, 531, 205, 206, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-06-21 09:00:00', '2025-06-21 09:03:00', 206, 1),
-  (912, 304, 531, 207, 208, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-06-21 09:05:00', '2025-06-21 09:08:00', 207, 2),
-  (913, 304, 531, 205, 207, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-06-21 09:10:00', '2025-06-21 09:13:00', 207, 3),
-  (914, 304, 531, 206, 208, 'POULE', 5, 1, 'FINISHED', 1, 180, '2025-06-21 09:15:00', '2025-06-21 09:18:00', 206, 4),
-  (915, 304, 531, 208, 205, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-06-21 09:20:00', '2025-06-21 09:23:00', 205, 5),
-  (916, 304, 531, 206, 207, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-06-21 09:25:00', '2025-06-21 09:28:00', 207, 6)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, bout_order, timer_paused) VALUES
+  (911, 304, 531, 205, 206, 'POULE', 2, 5, 'FINISHED', 1, 180, '2025-06-21 09:00:00', '2025-06-21 09:03:00', 206, 1, false),
+  (912, 304, 531, 207, 208, 'POULE', 5, 2, 'FINISHED', 1, 180, '2025-06-21 09:05:00', '2025-06-21 09:08:00', 207, 2, false),
+  (913, 304, 531, 205, 207, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-06-21 09:10:00', '2025-06-21 09:13:00', 207, 3, false),
+  (914, 304, 531, 206, 208, 'POULE', 5, 1, 'FINISHED', 1, 180, '2025-06-21 09:15:00', '2025-06-21 09:18:00', 206, 4, false),
+  (915, 304, 531, 208, 205, 'POULE', 3, 5, 'FINISHED', 1, 180, '2025-06-21 09:20:00', '2025-06-21 09:23:00', 205, 5, false),
+  (916, 304, 531, 206, 207, 'POULE', 4, 5, 'FINISHED', 1, 180, '2025-06-21 09:25:00', '2025-06-21 09:28:00', 207, 6, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ─────────────────────────────────────────
@@ -221,59 +220,59 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 301 (Nacional ×1.2) ──
 -- SEMIFINAL 1: Gómez(201) vs Fernández(207) → Gómez gana 15-10
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (701, 301, NULL, 201, 207, 'ELIMINATION', 15, 10, 'FINISHED', 3, 540, '2025-11-15 11:00:00', '2025-11-15 11:09:00', 201, 'SEMIFINAL', 1)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (701, 301, NULL, 201, 207, 'ELIMINATION', 15, 10, 'FINISHED', 3, 540, '2025-11-15 11:00:00', '2025-11-15 11:09:00', 201, 'SEMIFINAL', 1, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- SEMIFINAL 2: García(205) vs Martínez(203) → García gana 15-12
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (702, 301, NULL, 205, 203, 'ELIMINATION', 15, 12, 'FINISHED', 3, 540, '2025-11-15 11:10:00', '2025-11-15 11:19:00', 205, 'SEMIFINAL', 2)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (702, 301, NULL, 205, 203, 'ELIMINATION', 15, 12, 'FINISHED', 3, 540, '2025-11-15 11:10:00', '2025-11-15 11:19:00', 205, 'SEMIFINAL', 2, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- FINAL: Gómez(201) vs García(205) → García gana 15-13
 -- Resultado: 1°García(32×1.2=38.4), 2°Gómez(26×1.2=31.2), 3°Martínez(22×1.2=26.4), 3°Fernández(22×1.2=26.4)
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (703, 301, NULL, 201, 205, 'ELIMINATION', 13, 15, 'FINISHED', 3, 540, '2025-11-15 12:00:00', '2025-11-15 12:09:00', 205, 'FINAL', 1)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (703, 301, NULL, 201, 205, 'ELIMINATION', 13, 15, 'FINISHED', 3, 540, '2025-11-15 12:00:00', '2025-11-15 12:09:00', 205, 'FINAL', 1, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 302 ──
 -- FINAL: Torres(211) vs Reyes(212) → Torres gana 15-8
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (710, 302, NULL, 211, 212, 'ELIMINATION', 15, 8, 'FINISHED', 3, 480, '2025-09-20 11:00:00', '2025-09-20 11:08:00', 211, 'FINAL', 1)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (710, 302, NULL, 211, 212, 'ELIMINATION', 15, 8, 'FINISHED', 3, 480, '2025-09-20 11:00:00', '2025-09-20 11:08:00', 211, 'FINAL', 1, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 303 (Open Agosto) ──
 -- SEMIFINAL 1: Gómez(201) vs Rodríguez(202) → Gómez gana 15-11
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (721, 303, NULL, 201, 202, 'ELIMINATION', 15, 11, 'FINISHED', 3, 540, '2025-08-10 11:00:00', '2025-08-10 11:09:00', 201, 'SEMIFINAL', 1)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (721, 303, NULL, 201, 202, 'ELIMINATION', 15, 11, 'FINISHED', 3, 540, '2025-08-10 11:00:00', '2025-08-10 11:09:00', 201, 'SEMIFINAL', 1, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- SEMIFINAL 2: García(205) vs Fernández(207) → García gana 15-9
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (722, 303, NULL, 205, 207, 'ELIMINATION', 15, 9, 'FINISHED', 3, 540, '2025-08-10 11:10:00', '2025-08-10 11:19:00', 205, 'SEMIFINAL', 2)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (722, 303, NULL, 205, 207, 'ELIMINATION', 15, 9, 'FINISHED', 3, 540, '2025-08-10 11:10:00', '2025-08-10 11:19:00', 205, 'SEMIFINAL', 2, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- FINAL: Gómez(201) vs García(205) → Gómez gana 15-14
 -- Resultado: 1°Gómez(32), 2°García(26), 3°Rodríguez(22), 3°Fernández(22)
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (723, 303, NULL, 201, 205, 'ELIMINATION', 15, 14, 'FINISHED', 3, 540, '2025-08-10 12:00:00', '2025-08-10 12:09:00', 201, 'FINAL', 1)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (723, 303, NULL, 201, 205, 'ELIMINATION', 15, 14, 'FINISHED', 3, 540, '2025-08-10 12:00:00', '2025-08-10 12:09:00', 201, 'FINAL', 1, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Torneo 304 (Interprovincial Junio) ──
 -- SEMIFINAL 1: Martínez(203) vs López(204) → Martínez gana 15-8
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (731, 304, NULL, 203, 204, 'ELIMINATION', 15, 8, 'FINISHED', 3, 540, '2025-06-21 11:00:00', '2025-06-21 11:09:00', 203, 'SEMIFINAL', 1)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (731, 304, NULL, 203, 204, 'ELIMINATION', 15, 8, 'FINISHED', 3, 540, '2025-06-21 11:00:00', '2025-06-21 11:09:00', 203, 'SEMIFINAL', 1, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- SEMIFINAL 2: Fernández(207) vs Sánchez(206) → Fernández gana 15-12
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (732, 304, NULL, 207, 206, 'ELIMINATION', 15, 12, 'FINISHED', 3, 540, '2025-06-21 11:10:00', '2025-06-21 11:19:00', 207, 'SEMIFINAL', 2)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (732, 304, NULL, 207, 206, 'ELIMINATION', 15, 12, 'FINISHED', 3, 540, '2025-06-21 11:10:00', '2025-06-21 11:19:00', 207, 'SEMIFINAL', 2, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- FINAL: Martínez(203) vs Fernández(207) → Fernández gana 15-10
 -- Resultado: 1°Fernández(32), 2°Martínez(26), 3°López(22), 3°Sánchez(22)
-INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position)
-VALUES (733, 304, NULL, 203, 207, 'ELIMINATION', 10, 15, 'FINISHED', 3, 540, '2025-06-21 12:00:00', '2025-06-21 12:09:00', 207, 'FINAL', 1)
+INSERT INTO bouts (id, tournament_id, poule_id, athlete_left_id, athlete_right_id, format, score_left, score_right, status, current_period, elapsed_seconds, started_at, finished_at, winner_id, elimination_round, bracket_position, timer_paused)
+VALUES (733, 304, NULL, 203, 207, 'ELIMINATION', 10, 15, 'FINISHED', 3, 540, '2025-06-21 12:00:00', '2025-06-21 12:09:00', 207, 'FINAL', 1, false)
 ON CONFLICT (id) DO NOTHING;
 
 -- ─────────────────────────────────────────
