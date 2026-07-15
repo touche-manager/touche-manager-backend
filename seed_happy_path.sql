@@ -5,7 +5,7 @@
 -- ============================================================
 
 BEGIN;
-
+SET client_encoding TO 'UTF8';
 -- 1. ROLES
 INSERT INTO roles (name) VALUES ('ATHLETE')   ON CONFLICT (name) DO NOTHING;
 INSERT INTO roles (name) VALUES ('REFEREE')   ON CONFLICT (name) DO NOTHING;
